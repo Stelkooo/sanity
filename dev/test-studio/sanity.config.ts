@@ -17,6 +17,7 @@ import {imageHotspotArrayPlugin} from 'sanity-plugin-hotspot-array'
 import {muxInput} from 'sanity-plugin-mux-input'
 
 import {imageAssetSource} from './assetSources'
+import {debugStyledComponents} from './components/debugStyledComponents'
 import {
   Annotation,
   Block,
@@ -101,6 +102,7 @@ const sharedSettings = definePlugin({
     badges: (prev, context) => (context.schemaType === 'author' ? [CustomBadge, ...prev] : prev),
   },
   plugins: [
+    debugStyledComponents(),
     structureTool({
       icon: BookIcon,
       structure,

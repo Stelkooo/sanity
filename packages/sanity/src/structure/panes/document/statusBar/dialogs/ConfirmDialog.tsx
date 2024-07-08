@@ -9,7 +9,7 @@ import {
   useGlobalKeyDown,
   useLayer,
 } from '@sanity/ui'
-import {useCallback, useState} from 'react'
+import {useCallback, useRef} from 'react'
 import {type DocumentActionConfirmDialogProps, useTranslation} from 'sanity'
 
 import {structureLocaleNamespace} from '../../../../i18n'
@@ -53,11 +53,7 @@ function ConfirmDialogContent(props: {dialog: DocumentActionConfirmDialogProps})
   } = dialog
   const {t} = useTranslation(structureLocaleNamespace)
   const {isTopLayer} = useLayer()
-  const [element, setElement] = useState<HTMLElement | null>(null)
-
-  const handleClickOutside = useCallback(() => {
-    if (isTopLayer) onCancel()
-  }, [isTopLayer, onCancel])
+  const elementRef = useRef<HTMLDivElement | null>(null)
 
   const handleGlobalKeyDown = useCallback(
     (event: any) => {
@@ -66,11 +62,16 @@ function ConfirmDialogContent(props: {dialog: DocumentActionConfirmDialogProps})
     [isTopLayer, onCancel],
   )
 
-  useClickOutside(handleClickOutside, [element])
+  useClickOutside(
+    () => {
+      if (isTopLayer) onCancel()
+    },
+    () => [elementRef.current],
+  )
   useGlobalKeyDown(handleGlobalKeyDown)
 
   return (
-    <Flex direction="column" ref={setElement} style={{minWidth: 320 - 16, maxWidth: 400}}>
+    <Flex direction="column" ref={elementRef} style={{minWidth: 320 - 16, maxWidth: 400}}>
       <Box flex={1} overflow="auto" padding={4}>
         <Text>{message}</Text>
       </Box>

@@ -1,4 +1,5 @@
 import {Badge, type BadgeTone, Inline} from '@sanity/ui'
+import {useCallback} from 'react'
 import {type DocumentBadgeDescription} from 'sanity'
 
 import {Tooltip} from '../../../../ui-components'
@@ -49,12 +50,16 @@ function DocumentBadgesInner({states}: DocumentBadgesInnerProps) {
 
 export function DocumentBadges() {
   const {badges, editState} = useDocumentPane()
+  const children = useCallback<(props: {states: DocumentBadgeDescription[]}) => React.ReactNode>(
+    ({states}) => <DocumentBadgesInner states={states} />,
+    [],
+  )
 
   if (!editState || !badges) return null
 
   return (
     <RenderBadgeCollectionState badges={badges} badgeProps={editState as any}>
-      {({states}) => <DocumentBadgesInner states={states} />}
+      {children}
     </RenderBadgeCollectionState>
   )
 }

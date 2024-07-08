@@ -1,8 +1,7 @@
 import {describe, expect, it, jest} from '@jest/globals'
+import {useClickOutside} from '@sanity/ui'
 import {render, renderHook} from '@testing-library/react'
 import {createRef} from 'react'
-
-import {useOnClickOutside} from '../useOnClickOutside'
 
 describe('useOnClickOutside', () => {
   it('calls the handler when clicking outside of the refs', () => {
@@ -18,7 +17,7 @@ describe('useOnClickOutside', () => {
     )
 
     renderHook(() => {
-      useOnClickOutside([ref1, ref2], handler)
+      useClickOutside(handler, () => [ref1.current, ref2.current])
       return {ref1, ref2}
     })
 
@@ -49,7 +48,7 @@ describe('useOnClickOutside', () => {
     )
 
     const {result} = renderHook(() => {
-      useOnClickOutside([ref1, ref2], handler)
+      useClickOutside(handler, () => [ref1.current, ref2.current])
       return {ref1, ref2}
     })
 

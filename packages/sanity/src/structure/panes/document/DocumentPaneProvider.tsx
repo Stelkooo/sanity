@@ -307,9 +307,11 @@ export const DocumentPaneProvider = memo((props: DocumentPaneProviderProps) => {
   })
 
   patchRef.current = (event: PatchEvent) => {
+    // @TODO speed up this chain
     patch.execute(toMutationPatches(event.patches), initialValue.value)
   }
 
+  // @TODO speed this up
   const handleChange = useCallback((event: PatchEvent) => patchRef.current(event), [])
 
   const closeInspector = useCallback(

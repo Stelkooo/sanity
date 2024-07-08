@@ -1,4 +1,4 @@
-import {Stack, Text, useToast} from '@sanity/ui'
+import {Stack, Text, useClickOutside, useToast} from '@sanity/ui'
 import {uuid} from '@sanity/uuid'
 import {type FocusEvent, type KeyboardEvent, useCallback, useMemo, useRef, useState} from 'react'
 import {useObservableEvent} from 'react-rx'
@@ -11,7 +11,6 @@ import {Translate, useTranslation} from '../../../i18n'
 import {getPublishedId, isNonNullable} from '../../../util'
 import {Alert} from '../../components/Alert'
 import {useDidUpdate} from '../../hooks/useDidUpdate'
-import {useOnClickOutside} from '../../hooks/useOnClickOutside'
 import {set, setIfMissing, unset} from '../../patch'
 import {AutocompleteContainer} from './AutocompleteContainer'
 import {CreateButton} from './CreateButton'
@@ -257,19 +256,19 @@ export function ReferenceInput(props: ReferenceInputProps) {
   const clickOutsideBoundaryRef = useRef<HTMLDivElement>(null)
   const autoCompletePortalRef = useRef<HTMLDivElement>(null)
   const createButtonMenuPortalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(
-    [
-      containerRef,
-      clickOutsideBoundaryRef,
-      autoCompletePortalRef,
-      createButtonMenuPortalRef,
-      menuRef,
-    ],
+  useClickOutside(
     () => {
       if (isEditing) {
         handleCancelEdit()
       }
     },
+    () => [
+      containerRef.current,
+      clickOutsideBoundaryRef.current,
+      autoCompletePortalRef.current,
+      createButtonMenuPortalRef.current,
+      menuRef.current,
+    ],
   )
 
   return (

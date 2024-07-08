@@ -35,7 +35,7 @@
         "*.js"
       ],
       "dependsOn": [
-        "^build"
+        "^build", "build:web-workers"
       ],
       "outputLogs": "new-only"
     },
@@ -45,6 +45,12 @@
       ],
       "dependsOn": [
         "build"
+      ],
+      "outputLogs": "new-only"
+    },
+    "build:web-workers": {
+      "outputs": [
+        "web-workers/**"
       ],
       "outputLogs": "new-only"
     },

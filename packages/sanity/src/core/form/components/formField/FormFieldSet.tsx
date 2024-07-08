@@ -68,7 +68,10 @@ function getChildren(children: ReactNode | (() => ReactNode)): ReactNode {
   return typeof children === 'function' ? children() : children
 }
 
-const Root = styled(Stack).attrs({forwardedAs: 'fieldset'})`
+const Root = styled(Stack).attrs(
+  // @ts-expect-error - figure out why `forwardedAs` is not recognized
+  {forwardedAs: 'fieldset'},
+)`
   border: none;
 
   /* See: https://thatemil.com/blog/2015/01/03/reset-your-fieldset/ */

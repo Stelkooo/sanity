@@ -4,7 +4,7 @@ import {
   useGlobalKeyDown,
   useLayer,
 } from '@sanity/ui'
-import {useCallback, useState} from 'react'
+import {useCallback, useRef} from 'react'
 import {type DocumentActionPopoverDialogProps} from 'sanity'
 
 import {POPOVER_FALLBACK_PLACEMENTS} from './constants'
@@ -36,11 +36,7 @@ function PopoverDialogContent(props: {dialog: DocumentActionPopoverDialogProps})
   const {dialog} = props
   const {content, onClose} = dialog
   const {isTopLayer} = useLayer()
-  const [element, setElement] = useState<HTMLElement | null>(null)
-
-  const handleClickOutside = useCallback(() => {
-    if (isTopLayer) onClose()
-  }, [isTopLayer, onClose])
+  const elementRef = useRef<HTMLDivElement | null>(null)
 
   const handleGlobalKeyDown = useCallback(
     (event: any) => {
@@ -49,8 +45,13 @@ function PopoverDialogContent(props: {dialog: DocumentActionPopoverDialogProps})
     [isTopLayer, onClose],
   )
 
-  useClickOutside(handleClickOutside, [element])
+  useClickOutside(
+    () => {
+      if (isTopLayer) onClose()
+    },
+    () => [elementRef.current],
+  )
   useGlobalKeyDown(handleGlobalKeyDown)
 
-  return <div ref={setElement}>{content}</div>
+  return <div ref={elementRef}>{content}</div>
 }

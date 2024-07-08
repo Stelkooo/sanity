@@ -114,6 +114,7 @@ export function createDocumentStore({
   return {
     // Public API
     checkoutPair(idPair) {
+      // @TODO test worker implementation here
       return checkoutPair(client, idPair, serverActionsEnabled)
     },
     initialValue(opts, context) {

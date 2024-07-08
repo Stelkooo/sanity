@@ -129,23 +129,29 @@ export const DocumentActionShortcuts = memo(
         },
       [editState],
     )
+    const renderChildren = useCallback<
+      (props: {states: DocumentActionDescription[]}) => React.ReactNode
+    >(
+      ({states}) => (
+        <KeyboardShortcutResponder
+          {...rest}
+          activeIndex={activeIndex}
+          actionsBoxElement={actionsBoxElement}
+          as={as}
+          onActionStart={onActionStart}
+          states={states}
+        >
+          {children}
+        </KeyboardShortcutResponder>
+      ),
+      [actionsBoxElement, activeIndex, as, children, onActionStart, rest],
+    )
 
     if (!actionProps || !actions) return null
 
     return (
       <RenderActionCollectionState actionProps={actionProps} actions={actions}>
-        {({states}) => (
-          <KeyboardShortcutResponder
-            {...rest}
-            activeIndex={activeIndex}
-            actionsBoxElement={actionsBoxElement}
-            as={as}
-            onActionStart={onActionStart}
-            states={states}
-          >
-            {children}
-          </KeyboardShortcutResponder>
-        )}
+        {renderChildren}
       </RenderActionCollectionState>
     )
   },

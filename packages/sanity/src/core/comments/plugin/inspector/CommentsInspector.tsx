@@ -311,8 +311,8 @@ function CommentsInspectorInner(
     }
   }, [isTopLayer, selectedPath, setSelectedPath])
 
-  const handleClickOutside = useCallback(
-    (e: MouseEvent) => {
+  useClickOutside(
+    (e) => {
       // Clear the selected path when clicking outside the comments inspector.
       // We do this only when the comments inspector is the top layer.
       const isPTETarget =
@@ -322,10 +322,8 @@ function CommentsInspectorInner(
         handleDeselectPath()
       }
     },
-    [handleDeselectPath],
+    () => [rootRef.current],
   )
-
-  useClickOutside(handleClickOutside, [rootRef.current])
 
   const [loggedTelemetry, setLoggedTelemetry] = useState(false)
   useEffect(() => {

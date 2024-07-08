@@ -1,7 +1,20 @@
 import {ArrowLeftIcon, CloseIcon, SplitVerticalIcon} from '@sanity/icons'
 import {Flex} from '@sanity/ui'
-import {createElement, type ForwardedRef, forwardRef, memo, useMemo, useState} from 'react'
-import {useFieldActions, useTimelineSelector, useTranslation} from 'sanity'
+import {
+  createElement,
+  type ForwardedRef,
+  forwardRef,
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
+import {
+  type DocumentActionDescription,
+  useFieldActions,
+  useTimelineSelector,
+  useTranslation,
+} from 'sanity'
 
 import {Button, TooltipDelayGroupProvider} from '../../../../../ui-components'
 import {
@@ -101,6 +114,35 @@ export const DocumentPanelHeader = memo(
     // and if a BackLink component was provided
     const showPaneGroupCloseButton = !showSplitPaneCloseButton && !showBackButton && !!BackLink
 
+    const children = useCallback<(props: {states: DocumentActionDescription[]}) => React.ReactNode>(
+      ({states}) => (
+        <ActionDialogWrapper actionStates={states} referenceElement={referenceElement}>
+          {({handleAction}) => (
+            <div ref={setReferenceElement}>
+              <PaneContextMenuButton
+                nodes={contextMenuNodes}
+                key="context-menu"
+                actionsNodes={
+                  states.length > 0
+                    ? states.map((actionState, actionIndex) => (
+                        <ActionMenuListItem
+                          key={actionState.label}
+                          actionState={actionState}
+                          disabled={Boolean(actionState.disabled)}
+                          index={actionIndex}
+                          onAction={handleAction}
+                        />
+                      ))
+                    : undefined
+                }
+              />
+            </div>
+          )}
+        </ActionDialogWrapper>
+      ),
+      [contextMenuNodes, referenceElement],
+    )
+
     const {t} = useTranslation(structureLocaleNamespace)
 
     return (
@@ -147,31 +189,7 @@ export const DocumentPanelHeader = memo(
                   actionProps={editState}
                   group="paneActions"
                 >
-                  {({states}) => (
-                    <ActionDialogWrapper actionStates={states} referenceElement={referenceElement}>
-                      {({handleAction}) => (
-                        <div ref={setReferenceElement}>
-                          <PaneContextMenuButton
-                            nodes={contextMenuNodes}
-                            key="context-menu"
-                            actionsNodes={
-                              states.length > 0
-                                ? states.map((actionState, actionIndex) => (
-                                    <ActionMenuListItem
-                                      key={actionState.label}
-                                      actionState={actionState}
-                                      disabled={Boolean(actionState.disabled)}
-                                      index={actionIndex}
-                                      onAction={handleAction}
-                                    />
-                                  ))
-                                : undefined
-                            }
-                          />
-                        </div>
-                      )}
-                    </ActionDialogWrapper>
-                  )}
+                  {children}
                 </RenderActionCollectionState>
               )}
 

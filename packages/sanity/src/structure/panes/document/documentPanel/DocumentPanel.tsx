@@ -133,6 +133,10 @@ export const DocumentPanel = function DocumentPanel(props: DocumentPanelProps) {
   const inspectDialog = useMemo(() => {
     return isInspectOpen ? <InspectDialog value={displayed || value} /> : null
   }, [isInspectOpen, displayed, value])
+  const portalElements = useMemo(
+    () => ({documentScrollElement: documentScrollElement}),
+    [documentScrollElement],
+  )
 
   const showInspector = Boolean(!collapsed && inspector)
 
@@ -141,10 +145,7 @@ export const DocumentPanel = function DocumentPanel(props: DocumentPanelProps) {
       <Flex height="fill">
         {(features.resizablePanes || !showInspector) && (
           <DocumentBox flex={2} overflow="hidden">
-            <PortalProvider
-              element={portalElement}
-              __unstable_elements={{documentScrollElement: documentScrollElement}}
-            >
+            <PortalProvider element={portalElement} __unstable_elements={portalElements}>
               <BoundaryElementProvider element={documentScrollElement}>
                 <VirtualizerScrollInstanceProvider
                   scrollElement={documentScrollElement}

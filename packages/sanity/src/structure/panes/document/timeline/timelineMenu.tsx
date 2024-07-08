@@ -1,6 +1,6 @@
 import {ChevronDownIcon} from '@sanity/icons'
 import {type Placement, useClickOutside, useGlobalKeyDown, useToast} from '@sanity/ui'
-import {useCallback, useState} from 'react'
+import {useCallback, useRef, useState} from 'react'
 import {type Chunk, useTimelineSelector, useTranslation} from 'sanity'
 import {styled} from 'styled-components'
 
@@ -24,8 +24,8 @@ const Root = styled(Popover)`
 export function TimelineMenu({chunk, mode, placement}: TimelineMenuProps) {
   const {setTimelineRange, setTimelineMode, timelineError, ready, timelineStore} = useDocumentPane()
   const [open, setOpen] = useState(false)
-  const [button, setButton] = useState<HTMLButtonElement | null>(null)
-  const [popover, setPopover] = useState<HTMLElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
   const toast = useToast()
 
   const chunks = useTimelineSelector(timelineStore, (state) => state.chunks)
@@ -46,23 +46,24 @@ export function TimelineMenu({chunk, mode, placement}: TimelineMenuProps) {
     setOpen(false)
   }, [setTimelineMode])
 
-  const handleClickOutside = useCallback(() => {
-    if (open) {
-      handleClose()
-    }
-  }, [handleClose, open])
-
   const handleGlobalKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (open && (event.key === 'Escape' || event.key === 'Tab')) {
         handleClose()
-        button?.focus()
+        buttonRef.current?.focus()
       }
     },
-    [button, handleClose, open],
+    [buttonRef, handleClose, open],
   )
 
-  useClickOutside(handleClickOutside, [button, popover])
+  useClickOutside(
+    () => {
+      if (open) {
+        handleClose()
+      }
+    },
+    () => [buttonRef.current, popoverRef.current],
+  )
   useGlobalKeyDown(handleGlobalKeyDown)
 
   const selectRev = useCallback(
@@ -165,7 +166,7 @@ export function TimelineMenu({chunk, mode, placement}: TimelineMenuProps) {
       open={open}
       placement={placement}
       portal
-      ref={setPopover}
+      ref={popoverRef}
     >
       <Button
         data-testid={open ? 'timeline-menu-close-button' : 'timeline-menu-open-button'}
@@ -173,7 +174,7 @@ export function TimelineMenu({chunk, mode, placement}: TimelineMenuProps) {
         mode="bleed"
         iconRight={ChevronDownIcon}
         onClick={open ? handleClose : handleOpen}
-        ref={setButton}
+        ref={buttonRef}
         selected={open}
         style={{maxWidth: '100%'}}
         text={ready ? buttonLabel : t('timeline.loading-history')}

@@ -1,5 +1,5 @@
 import {Card, useClickOutside} from '@sanity/ui'
-import {cloneElement, useCallback, useMemo, useState} from 'react'
+import {cloneElement, useCallback, useMemo, useRef, useState} from 'react'
 
 import {Popover, type PopoverProps} from '../../../../ui-components'
 import {type TFunction, useTranslation} from '../../../i18n'
@@ -25,8 +25,8 @@ export interface CommentReactionsMenuButtonProps {
 
 export function CommentReactionsMenuButton(props: CommentReactionsMenuButtonProps) {
   const {onMenuClose, onMenuOpen, onSelect, options, readOnly, renderMenuButton, mode} = props
-  const [buttonElement, setButtonElement] = useState<HTMLButtonElement | null>(null)
-  const [popoverElement, setPopoverElement] = useState<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
 
   const [open, setOpen] = useState<boolean>(false)
   const {t} = useTranslation(commentsLocaleNamespace)
@@ -53,8 +53,8 @@ export function CommentReactionsMenuButton(props: CommentReactionsMenuButtonProp
     if (!open) return
 
     handleClose()
-    buttonElement?.focus()
-  }, [buttonElement, handleClose, open])
+    buttonRef.current?.focus()
+  }, [handleClose, open])
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -67,7 +67,7 @@ export function CommentReactionsMenuButton(props: CommentReactionsMenuButtonProp
     [handleCloseAndFocus],
   )
 
-  useClickOutside(handleClose, [popoverElement, buttonElement])
+  useClickOutside(handleClose, () => [popoverRef.current, buttonRef.current])
 
   const handleSelect = useCallback(
     (option: CommentReactionOption) => {
@@ -95,7 +95,7 @@ export function CommentReactionsMenuButton(props: CommentReactionsMenuButtonProp
       'disabled': readOnly || mode === 'upsell',
       'id': 'reactions-menu-button',
       'onClick': handleClick,
-      'ref': setButtonElement,
+      'ref': buttonRef,
     })
   }, [handleClick, open, readOnly, renderMenuButton, t, mode])
 
@@ -119,7 +119,7 @@ export function CommentReactionsMenuButton(props: CommentReactionsMenuButtonProp
       open={open}
       placement="bottom"
       portal
-      ref={setPopoverElement}
+      ref={popoverRef}
       tone="default"
     >
       {button}

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {DiffContext} from 'sanity/_singletons'
@@ -48,7 +49,7 @@ export function GroupChange(
 
   const docOperations = useDocumentOperation(documentId, schemaType.name) as FieldOperationsAPI
   const [confirmRevertOpen, setConfirmRevertOpen] = useState(false)
-  const [revertPopoverElement, setRevertPopoverElement] = useState<HTMLDivElement | null>(null)
+  const revertPopoverElementRef = useRef<HTMLDivElement | null>(null)
 
   const [permissions, isPermissionsLoading] = useDocumentPairPermissions({
     id: documentId,
@@ -69,7 +70,11 @@ export function GroupChange(
     setConfirmRevertOpen(false)
   }, [])
 
-  useClickOutside(() => setConfirmRevertOpen(false), [revertPopoverElement])
+  // @TODO update
+  useClickOutside(
+    () => setConfirmRevertOpen(false),
+    () => [revertPopoverElementRef.current],
+  )
 
   const content = useMemo(
     () =>
@@ -117,7 +122,7 @@ export function GroupChange(
               portal
               placement="left"
               open={confirmRevertOpen}
-              ref={setRevertPopoverElement}
+              ref={revertPopoverElementRef}
             >
               <Box>
                 <RevertChangesButton

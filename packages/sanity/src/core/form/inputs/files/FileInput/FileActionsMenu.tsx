@@ -1,6 +1,6 @@
 import {BinaryDocumentIcon} from '@sanity/icons'
 import {Box, Card, Flex, Menu, Stack, Text, useClickOutside, useGlobalKeyDown} from '@sanity/ui'
-import {type ReactNode, useCallback, useEffect, useState} from 'react'
+import {type ReactNode, useCallback, useEffect, useRef, useState} from 'react'
 
 import {Popover} from '../../../../../ui-components'
 import {ContextMenuButton} from '../../../../components/contextMenuButton'
@@ -31,7 +31,7 @@ export function FileActionsMenu(props: Props) {
     onMenuOpen,
     setMenuButtonElement,
   } = props
-  const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const [buttonElement, setButtonElement] = useState<HTMLButtonElement | null>(null)
 
   const handleClick = useCallback(() => onMenuOpen(true), [onMenuOpen])
@@ -51,15 +51,12 @@ export function FileActionsMenu(props: Props) {
   // Close menu when clicking outside of it
   // Not when clicking on the button
   useClickOutside(
-    useCallback(
-      (event) => {
-        if (!buttonElement?.contains(event.target as Node)) {
-          onMenuOpen(false)
-        }
-      },
-      [buttonElement, onMenuOpen],
-    ),
-    [menuElement],
+    (event) => {
+      if (!buttonElement?.contains(event.target as Node)) {
+        onMenuOpen(false)
+      }
+    },
+    () => [menuRef.current],
   )
 
   const setOptionsButtonRef = useCallback(
@@ -76,9 +73,9 @@ export function FileActionsMenu(props: Props) {
   // When the popover is open, focus the menu to enable keyboard navigation
   useEffect(() => {
     if (isMenuOpen) {
-      menuElement?.focus()
+      menuRef.current?.focus()
     }
-  }, [isMenuOpen, menuElement])
+  }, [isMenuOpen])
 
   const {t} = useTranslation()
 
@@ -121,7 +118,7 @@ export function FileActionsMenu(props: Props) {
           {/* Using a customized Popover instead of MenuButton because a MenuButton will close on click
      and break replacing an uploaded file. */}
           <Popover
-            content={<Menu ref={setMenuElement}>{children}</Menu>}
+            content={<Menu ref={menuRef}>{children}</Menu>}
             id="file-actions-menu"
             portal
             open={isMenuOpen}

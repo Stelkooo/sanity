@@ -77,9 +77,11 @@ const config = {
   },
   // Makes it much easier to see which component got memoized by the react compiler
   // when testing on https://test-next-studio.sanity.build
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: process.env.REACT_COMPILER !== 'true',
+  // Only enable the react profiler when the compiler is disabled, to better use native browser profiling without the react profiler overhead
+  reactProductionProfiling: process.env.REACT_COMPILER !== 'true',
   experimental: {
-    reactCompiler: process.env.REACT_COMPILER === 'true' ? true : false,
+    reactCompiler: process.env.REACT_COMPILER === 'true',
     turbo: {
       resolveAlias: {
         '@sanity/block-tools': '@sanity/block-tools/src/index.ts',

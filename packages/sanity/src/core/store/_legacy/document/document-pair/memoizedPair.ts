@@ -19,6 +19,7 @@ export const memoizedPair: (
     _typeName: string,
     serverActionsEnabled: Observable<boolean>,
   ): Observable<Pair> => {
+    // @TODO test worker implementation here
     return new Observable<Pair>((subscriber) => {
       const pair = checkoutPair(client, idPair, serverActionsEnabled)
       subscriber.next(pair)

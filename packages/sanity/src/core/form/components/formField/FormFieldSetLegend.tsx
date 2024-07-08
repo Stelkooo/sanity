@@ -18,7 +18,10 @@ const Root = styled.legend`
   display: table;
 `
 
-const ToggleButton = styled(Flex).attrs({forwardedAs: 'button'})((props: {theme: Theme}) => {
+const ToggleButton = styled(Flex).attrs(
+  // @ts-expect-error - figure out why `forwardedAs` is not recognized
+  {forwardedAs: 'button'},
+)((props: {theme: Theme}) => {
   const {theme} = props
   const {focusRing, radius} = theme.sanity
   const {base} = theme.sanity.color

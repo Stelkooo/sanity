@@ -2,8 +2,9 @@
 import {type SanityDocument} from '@sanity/client'
 import {type User} from '@sanity/types'
 import {sortBy} from 'lodash'
-import {useEffect, useMemo, useState} from 'react'
-import {concat, forkJoin, map, mergeMap, type Observable, of, switchMap} from 'rxjs'
+import {useMemo} from 'react'
+import {useObservable} from 'react-rx'
+import {forkJoin, map, mergeMap, type Observable, of, switchMap} from 'rxjs'
 
 import {
   type DocumentValuePermission,
@@ -64,8 +65,6 @@ export function useUserListWithPermissions(
   const projectStore = useProjectStore()
   const userStore = useUserStore()
   const client = useClient(DEFAULT_STUDIO_CLIENT_OPTIONS)
-
-  const [state, setState] = useState<UserListWithPermissionsHookValue>(INITIAL_STATE)
 
   const list$ = useMemo(() => {
     // 1. Get the project members and filter out the robot users
@@ -141,21 +140,5 @@ export function useUserListWithPermissions(
     return $alphabetical
   }, [client.observable, documentValue, projectStore, userStore, permission])
 
-  useEffect(() => {
-    const initial$ = of(INITIAL_STATE)
-    const state$ = concat(initial$, list$)
-
-    const sub = state$.subscribe({
-      next: setState,
-      error: (error) => {
-        setState({data: [], error, loading: false})
-      },
-    })
-
-    return () => {
-      sub.unsubscribe()
-    }
-  }, [list$])
-
-  return state
+  return useObservable(list$, INITIAL_STATE)
 }

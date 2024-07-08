@@ -1,2 +1,2 @@
-export * from './GetHookCollectionState'
+export * from './HookCollection'
 export * from './types'

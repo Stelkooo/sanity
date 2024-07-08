@@ -32,6 +32,9 @@ export const Root = styled.span<{$toneKey?: Exclude<ThemeColorToneKey, 'transpar
   },
 )
 
-export const TooltipBox = styled(Box).attrs({forwardedAs: 'span'})`
+export const TooltipBox = styled(Box).attrs(
+  // @ts-expect-error - figure out why `forwardedAs` is not recognized
+  {forwardedAs: 'span'},
+)`
   max-width: 250px;
 `

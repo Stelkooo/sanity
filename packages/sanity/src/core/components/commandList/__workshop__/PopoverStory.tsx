@@ -1,7 +1,7 @@
 import {ChevronDownIcon} from '@sanity/icons'
 import {Card, Flex, Inline, Stack, useClickOutside, useGlobalKeyDown} from '@sanity/ui'
 import {useSelect} from '@sanity/ui-workshop'
-import {useCallback, useState} from 'react'
+import {useCallback, useRef, useState} from 'react'
 
 import {Button, Popover} from '../../../../ui-components'
 import {CommandList} from '../CommandList'
@@ -24,8 +24,8 @@ export default function PopoverStory() {
 
   const [selectedIndex, setSelectedIndex] = useState(100)
   const [open, setOpen] = useState(false)
-  const [button, setButton] = useState<HTMLElement | null>(null)
-  const [popover, setPopover] = useState<HTMLElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
 
   const handleChildClick = useCallback((index: number) => {
     setSelectedIndex(index)
@@ -38,10 +38,10 @@ export default function PopoverStory() {
     (event: KeyboardEvent) => {
       if (open && (event.key === 'Escape' || event.key === 'Tab')) {
         handleClose()
-        button?.focus()
+        buttonRef.current?.focus()
       }
     },
-    [button, handleClose, open],
+    [handleClose, open],
   )
   const handleOpen = useCallback(() => setOpen(true), [])
   const handlePopoverButtonClick = useCallback(() => {
@@ -52,7 +52,7 @@ export default function PopoverStory() {
     }
   }, [handleClose, handleOpen, open])
 
-  useClickOutside(handleClose, [button, popover])
+  useClickOutside(handleClose, () => [buttonRef.current, popoverRef.current])
   useGlobalKeyDown(handleGlobalKeyDown)
 
   const renderItem = useCallback<CommandListRenderItemCallback<number>>(
@@ -98,12 +98,12 @@ export default function PopoverStory() {
             }
             open={open}
             portal
-            ref={setPopover}
+            ref={popoverRef}
           >
             <Button
               iconRight={ChevronDownIcon}
               onClick={handlePopoverButtonClick}
-              ref={setButton}
+              ref={buttonRef}
               text={`Popover (open at index ${selectedIndex})`}
               tone="primary"
             />

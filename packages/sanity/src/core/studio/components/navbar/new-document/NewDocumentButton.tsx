@@ -1,7 +1,7 @@
 import {AddIcon, SearchIcon} from '@sanity/icons'
 import {isDeprecatedSchemaType} from '@sanity/types'
 import {Card, Flex, Stack, Text, TextInput, type TextInputProps, useClickOutside} from '@sanity/ui'
-import {type ChangeEvent, type KeyboardEvent, useCallback, useMemo, useState} from 'react'
+import {type ChangeEvent, type KeyboardEvent, useCallback, useMemo, useRef, useState} from 'react'
 import ReactFocusLock from 'react-focus-lock'
 
 import {Button, type ButtonProps, Tooltip, type TooltipProps} from '../../../../../ui-components'
@@ -40,9 +40,9 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
 
   const [open, setOpen] = useState<boolean>(false)
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [popoverElement, setPopoverElement] = useState<HTMLDivElement | null>(null)
-  const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(null)
-  const [buttonElement, setButtonElement] = useState<HTMLButtonElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
+  const dialogElementRef = useRef<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
   const [searchInputElement, setSearchInputElement] = useState<HTMLInputElement | null>(null)
   const {t} = useTranslation()
   const getI18nText = useGetI18nText(options)
@@ -81,8 +81,8 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
   const handleClose = useCallback(() => {
     setOpen(false)
     setSearchQuery('')
-    buttonElement?.focus()
-  }, [buttonElement])
+    buttonRef.current?.focus()
+  }, [])
 
   // Open popover on arrow down
   const handleOpenButtonKeyDown = useCallback(
@@ -105,11 +105,14 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
   )
 
   // Close popover on click outside
-  useClickOutside(() => {
-    if (open) {
-      handleClose()
-    }
-  }, [buttonElement, dialogElement, popoverElement])
+  useClickOutside(
+    () => {
+      if (open) {
+        handleClose()
+      }
+    },
+    () => [buttonRef.current, dialogElementRef.current, popoverRef.current],
+  )
 
   const sharedListProps: NewDocumentListProps = useMemo(
     () => ({
@@ -158,7 +161,7 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
       'text': t('new-document.button'),
       'mode': 'ghost',
       'onClick': handleToggleOpen,
-      'ref': setButtonElement,
+      'ref': buttonRef,
       'selected': open,
     }),
     [disabled, handleToggleOpen, loading, open, openDialogAriaLabel, t],
@@ -205,7 +208,7 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
             id="create-new-document-dialog"
             onClickOutside={handleClose}
             onClose={handleClose}
-            ref={setDialogElement}
+            ref={dialogElementRef}
             scheme={scheme}
             width={1}
           >
@@ -235,7 +238,7 @@ export function NewDocumentButton(props: NewDocumentButtonProps) {
       open={open}
       portal
       radius={3}
-      ref={setPopoverElement}
+      ref={popoverRef}
       scheme={scheme}
       content={
         <RootFlex

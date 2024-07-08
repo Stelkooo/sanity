@@ -17,7 +17,7 @@
     "check:deps": "pnpm --recursive --parallel exec depcheck",
     "check:format": "prettier . --check",
     "check:lint": "turbo run lint --continue -- --quiet",
-    "check:react-compiler": "eslint --no-inline-config --no-eslintrc --ext .cjs,.mjs,.js,.jsx,.ts,.tsx --parser @typescript-eslint/parser --plugin react-compiler --rule 'react-compiler/react-compiler: [warn]' --ignore-path .eslintignore.react-compiler --max-warnings 29 .",
+    "check:react-compiler": "eslint --no-inline-config --no-eslintrc --ext .cjs,.mjs,.js,.jsx,.ts,.tsx --parser @typescript-eslint/parser --plugin react-compiler --rule 'react-compiler/react-compiler: [warn]' --ignore-path .eslintignore.react-compiler --max-warnings 5 .",
     "check:test": "run-s test -- --silent",
     "check:types": "tsc && turbo run check:types --filter='./packages/*' --filter='./packages/@sanity/*'",
     "chore:format:fix": "prettier --cache --write .",
@@ -112,7 +112,7 @@
     "@sanity/prettier-config": "^1.0.2",
     "@sanity/test": "0.0.1-alpha.1",
     "@sanity/tsdoc": "1.0.83",
-    "@sanity/ui": "^2.6.8",
+    "@sanity/ui": "2.6.7-canary.0",
     "@sanity/uuid": "^3.0.2",
     "@types/glob": "^7.2.0",
     "@types/lodash": "^4.14.149",
@@ -185,7 +185,9 @@
       "@npmcli/arborist": "^7.5.4",
       "@sanity/ui@2": "$@sanity/ui",
       "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin",
-      "@typescript-eslint/parser": "$@typescript-eslint/parser"
+      "@typescript-eslint/parser": "$@typescript-eslint/parser",
+      "framer-motion": "11.3.0",
+      "styled-components": "npm:speedy-styled-components@6.1.12-canary.3"
     }
   },
   "isSanityMonorepo": true

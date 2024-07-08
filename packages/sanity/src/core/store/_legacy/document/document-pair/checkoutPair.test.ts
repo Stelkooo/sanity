@@ -3,7 +3,7 @@ import {type SanityClient} from '@sanity/client'
 import {merge, of} from 'rxjs'
 import {delay} from 'rxjs/operators'
 
-import {checkoutPair} from './checkoutPair'
+import {checkoutPairImplementation as checkoutPair} from './checkoutPairImplementation'
 
 const mockedDataRequest = jest.fn(() => of({}))
 const mockedActionRequest = jest.fn(() => of({}))

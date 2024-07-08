@@ -61,7 +61,6 @@ export const FormView = forwardRef<HTMLDivElement, FormViewProps>(function FormV
   // The `patchChannel` is an INTERNAL publish/subscribe channel that we use to notify form-builder
   // nodes about both remote and local patches.
   // - Used by the Portable Text input to modify selections.
-  // - Used by `withDocument` to reset value.
   const patchChannel = useMemo(() => createPatchChannel(), [])
 
   const isLocked = editState?.transactionSyncLock?.enabled
@@ -95,23 +94,6 @@ export const FormView = forwardRef<HTMLDivElement, FormViewProps>(function FormV
       sub.unsubscribe()
     }
   }, [documentId, documentStore, documentType, patchChannel])
-
-  const hasRev = Boolean(value?._rev)
-  useEffect(() => {
-    if (hasRev) {
-      // this is a workaround for an issue that caused the document pushed to withDocument to get
-      // stuck at the first initial value.
-      // This effect is triggered only when the document goes from not having a revision, to getting one
-      // so it will kick in as soon as the document is received from the backend
-      patchChannel.publish({
-        type: 'mutation',
-        patches: [],
-        snapshot: value,
-      })
-    }
-    // React to changes in hasRev only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasRev])
 
   const [formRef, setFormRef] = useState<null | HTMLDivElement>(null)
 

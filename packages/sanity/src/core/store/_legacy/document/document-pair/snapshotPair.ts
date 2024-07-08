@@ -67,6 +67,7 @@ export const snapshotPair = memoize(
     typeName: string,
     serverActionsEnabled: Observable<boolean>,
   ): Observable<SnapshotPair> => {
+    // @TODO test worker implementation here
     return memoizedPair(client, idPair, typeName, serverActionsEnabled).pipe(
       map(({published, draft, transactionsPendingEvents$}): SnapshotPair => {
         return {

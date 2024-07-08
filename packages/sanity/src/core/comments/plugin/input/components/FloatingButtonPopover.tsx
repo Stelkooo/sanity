@@ -1,7 +1,7 @@
 import {AddCommentIcon} from '@sanity/icons'
 import {useClickOutside} from '@sanity/ui'
 import {motion, type Variants} from 'framer-motion'
-import {useState} from 'react'
+import {useRef} from 'react'
 import {styled} from 'styled-components'
 
 import {Button, Popover, type PopoverProps} from '../../../../../ui-components'
@@ -23,16 +23,16 @@ const VARIANTS: Variants = {
 interface FloatingButtonPopoverProps {
   disabled: boolean
   onClick: () => void
-  onClickOutside: (e: MouseEvent) => void
+  onClickOutside: (e: MouseEvent | TouchEvent) => void
   referenceElement: PopoverProps['referenceElement']
 }
 
 export function FloatingButtonPopover(props: FloatingButtonPopoverProps) {
   const {disabled, onClick, onClickOutside, referenceElement} = props
-  const [popoverElement, setPopoverElement] = useState<HTMLButtonElement | null>(null)
+  const popoverRef = useRef<HTMLButtonElement | null>(null)
   const {t} = useTranslation(commentsLocaleNamespace)
 
-  useClickOutside(onClickOutside, [popoverElement])
+  useClickOutside(onClickOutside, () => [popoverRef.current])
 
   const disabledText = t('inline-add-comment-button.disabled-overlap-title')
   const enabledText = t('inline-add-comment-button.title')
@@ -45,7 +45,7 @@ export function FloatingButtonPopover(props: FloatingButtonPopoverProps) {
       icon={disabled ? CommentDisabledIcon : AddCommentIcon}
       mode="bleed"
       onClick={onClick}
-      ref={setPopoverElement}
+      ref={popoverRef}
       text={text}
     />
   )

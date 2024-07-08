@@ -1,180 +1,15 @@
-import {type Action, type SanityClient} from '@sanity/client'
-import {type Mutation} from '@sanity/mutator'
+import {type SanityClient} from '@sanity/client'
 import {type SanityDocument} from '@sanity/types'
-import {omit} from 'lodash'
-import {EMPTY, from, merge, type Observable, Subject} from 'rxjs'
-import {filter, map, mergeMap, share, take, tap} from 'rxjs/operators'
+import {distinctUntilChanged, type Observable, Subject} from 'rxjs'
+import {filter, map} from 'rxjs/operators'
 
-import {
-  type BufferedDocumentEvent,
-  type CommitRequest,
-  createBufferedDocument,
-  type MutationPayload,
-  type RemoteSnapshotEvent,
-} from '../buffered-doc'
-import {getPairListener, type ListenerEvent} from '../getPairListener'
-import {type IdPair, type PendingMutationsEvent, type ReconnectEvent} from '../types'
-
-const isMutationEventForDocId =
-  (id: string) =>
-  (
-    event: ListenerEvent,
-  ): event is Exclude<ListenerEvent, ReconnectEvent | PendingMutationsEvent> => {
-    return event.type !== 'reconnect' && event.type !== 'pending' && event.documentId === id
-  }
-
-/**
- * @hidden
- * @beta */
-export type WithVersion<T> = T & {version: 'published' | 'draft'}
-
-/**
- * @hidden
- * @beta */
-export type DocumentVersionEvent = WithVersion<ReconnectEvent | BufferedDocumentEvent>
-
-/**
- * @hidden
- * @beta */
-export type RemoteSnapshotVersionEvent = WithVersion<RemoteSnapshotEvent>
-
-/**
- * @hidden
- * @beta */
-export interface DocumentVersion {
-  consistency$: Observable<boolean>
-  remoteSnapshot$: Observable<RemoteSnapshotVersionEvent>
-  events: Observable<DocumentVersionEvent>
-
-  patch: (patches: any[]) => MutationPayload[]
-  create: (document: Partial<SanityDocument>) => MutationPayload
-  createIfNotExists: (document: SanityDocument) => MutationPayload
-  createOrReplace: (document: SanityDocument) => MutationPayload
-  delete: () => MutationPayload
-
-  mutate: (mutations: MutationPayload[]) => void
-  commit: () => void
-}
-
-/**
- * @hidden
- * @beta */
-export interface Pair {
-  /** @internal */
-  transactionsPendingEvents$: Observable<PendingMutationsEvent>
-  published: DocumentVersion
-  draft: DocumentVersion
-  complete: () => void
-}
-
-function setVersion<T>(version: 'draft' | 'published') {
-  return (ev: T): T & {version: 'draft' | 'published'} => ({...ev, version})
-}
-
-function requireId<T extends {_id?: string; _type: string}>(
-  value: T,
-): asserts value is T & {_id: string} {
-  if (!value._id) {
-    throw new Error('Expected document to have an _id')
-  }
-}
-
-//if we're patching a published document directly
-//then we're live editing and we should use raw mutations
-//rather than actions
-function isLiveEditMutation(mutationParams: Mutation['params'], publishedId: string) {
-  const {resultRev, ...mutation} = mutationParams
-  const patchTargets: string[] = mutation.mutations.flatMap((mut) => {
-    const mutationPayloads = Object.values(mut)
-    if (mutationPayloads.length > 1) {
-      throw new Error('Did not expect multiple mutations in the same payload')
-    }
-    return mutationPayloads[0].id || mutationPayloads[0]._id
-  })
-  return patchTargets.every((target) => target === publishedId)
-}
-
-function toActions(idPair: IdPair, mutationParams: Mutation['params']): Action[] {
-  return mutationParams.mutations.flatMap((mutations) => {
-    // This action is not always interoperable with the equivalent mutation. It will fail if the
-    // published version of the document already exists.
-    if (mutations.createIfNotExists) {
-      // ignore all createIfNotExists, as these should be covered by the actions api and only be done locally
-      return []
-    }
-    if (mutations.create) {
-      // the actions API requires attributes._id to be set, while it's optional in the mutation API
-      requireId(mutations.create)
-      return {
-        actionType: 'sanity.action.document.create',
-        publishedId: idPair.publishedId,
-        attributes: mutations.create,
-        ifExists: 'fail',
-      }
-    }
-    if (mutations.patch) {
-      return {
-        actionType: 'sanity.action.document.edit',
-        draftId: idPair.draftId,
-        publishedId: idPair.publishedId,
-        patch: omit(mutations.patch, 'id'),
-      }
-    }
-    throw new Error('Cannot map mutation to action')
-  })
-}
-
-function commitActions(client: SanityClient, idPair: IdPair, mutationParams: Mutation['params']) {
-  if (isLiveEditMutation(mutationParams, idPair.publishedId)) {
-    return commitMutations(client, mutationParams)
-  }
-
-  return client.observable.action(toActions(idPair, mutationParams), {
-    tag: 'document.commit',
-    transactionId: mutationParams.transactionId,
-  })
-}
-
-function commitMutations(client: SanityClient, mutationParams: Mutation['params']) {
-  const {resultRev, ...mutation} = mutationParams
-  return client.dataRequest('mutate', mutation, {
-    visibility: 'async',
-    returnDocuments: false,
-    tag: 'document.commit',
-    // This makes sure the studio doesn't crash when a draft is crated
-    // because someone deleted a referenced document in the target dataset
-    skipCrossDatasetReferenceValidation: true,
-  })
-}
-
-function submitCommitRequest(
-  client: SanityClient,
-  idPair: IdPair,
-  request: CommitRequest,
-  serverActionsEnabled: boolean,
-) {
-  return from(
-    serverActionsEnabled
-      ? commitActions(client, idPair, request.mutation.params)
-      : commitMutations(client, request.mutation.params),
-  ).pipe(
-    tap({
-      error: (error) => {
-        const isBadRequest =
-          'statusCode' in error &&
-          typeof error.statusCode === 'number' &&
-          error.statusCode >= 400 &&
-          error.statusCode <= 500
-        if (isBadRequest) {
-          request.cancel(error)
-        } else {
-          request.failure(error)
-        }
-      },
-      next: () => request.success(),
-    }),
-  )
-}
+import {type BufferedDocumentWrapper} from '../buffered-doc/createBufferedDocument'
+import {type IdPair} from '../types'
+import {type Pair} from './checkoutPairImplementation'
+// eslint-disable-next-line import/no-duplicates
+import {type WorkerInput, type WorkerOutput} from './checkoutPairWorker'
+// eslint-disable-next-line import/no-duplicates
+// import CheckoutPairWorker from './checkoutPairWorker?worker'
 
 /** @internal */
 export function checkoutPair(
@@ -182,59 +17,198 @@ export function checkoutPair(
   idPair: IdPair,
   serverActionsEnabled: Observable<boolean>,
 ): Pair {
-  const {publishedId, draftId} = idPair
+  const input$ = new Subject<WorkerInput>()
 
-  const listenerEventsConnector = new Subject<ListenerEvent>()
-  const listenerEvents$ = getPairListener(client, idPair).pipe(
-    share({connector: () => listenerEventsConnector}),
-  )
+  // const outputConnector = new Subject<WorkerOutput>()
+  const output$ = new Subject<WorkerOutput>()
+  // const output$ = outputConnector
+  // .pipe(
+  //   share({connector: () => outputConnector}),
+  // )
+  // const worker = new CheckoutPairWorker()
+  const worker =
+    typeof __DEV__ === 'boolean' && __DEV__
+      ? new Worker(new URL('./checkoutPairWorker.ts', import.meta.url), {type: 'module'})
+      : new Worker(new URL('../../../../../../web-workers/checkoutPair.mjs', import.meta.url), {
+          type: 'module',
+        })
+  worker.onmessage = (ev: MessageEvent<WorkerOutput>) => {
+    // console.log('worker.onmessage', ev)
+    return output$.next(ev.data)
+  }
+  worker.onerror = (ev: ErrorEvent) => {
+    // console.log('worker.onerror', ev)
+    return output$.error(ev)
+  }
 
-  const reconnect$ = listenerEvents$.pipe(
-    filter((ev) => ev.type === 'reconnect'),
-  ) as Observable<ReconnectEvent>
+  const subscription = input$.subscribe((input) => {
+    // console.log('send worker input', input)
+    worker.postMessage(input)
+  })
 
-  const draft = createBufferedDocument(
-    draftId,
-    listenerEvents$.pipe(filter(isMutationEventForDocId(draftId))),
-  )
+  const proxy = (message: WorkerInput): void => {
+    // console.log('worker proxy', message)
+    // input$.next(message)
+    worker.postMessage(message)
+  }
 
-  const published = createBufferedDocument(
-    publishedId,
-    listenerEvents$.pipe(filter(isMutationEventForDocId(publishedId))),
-  )
+  const actionsSub = serverActionsEnabled
+    .pipe(distinctUntilChanged())
+    .subscribe((isServerActionsEnabled) => {
+      // console.log('worker serverActionsEnabled', {isServerActionsEnabled})
+      return proxy({
+        type: 'construct',
+        clientConfig: client.config(),
+        idPair,
+        serverActionsEnabled: isServerActionsEnabled,
+      })
+    })
 
-  // share commit handling between draft and published
-  const transactionsPendingEvents$ = listenerEvents$.pipe(
-    filter((ev): ev is PendingMutationsEvent => ev.type === 'pending'),
-  )
-
-  const commits$ = merge(draft.commitRequest$, published.commitRequest$).pipe(
-    mergeMap((commitRequest) =>
-      serverActionsEnabled.pipe(
-        take(1),
-        mergeMap((canUseServerActions) =>
-          submitCommitRequest(client, idPair, commitRequest, canUseServerActions),
-        ),
-      ),
+  const transactionsPendingEvents$ = output$.pipe(
+    filter(
+      (ev): ev is Extract<WorkerOutput, {type: 'transactionsPendingEvents$'}> =>
+        ev.type === 'transactionsPendingEvents$',
     ),
-    mergeMap(() => EMPTY),
-    share(),
+    map((ev) => ev.payload),
   )
+
+  // const worker$ = fromWorker<WorkerInput, WorkerOutput>(
+  //   () => new CheckoutPairWorker(),
+  //   input$,
+  //   // ).pipe(share({connector: () => outputConnector}))
+  // )
+
+  // worker$.subscribe((event) => {
+  //   console.log('worker event', event)
+  // })
+
+  /**
+   * These need to be handled as worker output:
+   * - transactionsPendingEvents$
+   * - draft.consistency$
+   * - draft.events
+   * - draft.remoteSnapshot$
+   * - published.consistency$
+   * - published.events
+   * - published.remoteSnapshot$
+   *
+   * While these should be the worker input:
+   * - draft.commit
+   * - draft.create
+   * - draft.createIfNotExists
+   * - draft.createOrReplace
+   * - draft.delete
+   * - draft.mutate
+   * - draft.patch
+   * - published.commit
+   * - published.create
+   * - published.createIfNotExists
+   * - published.createOrReplace
+   * - published.delete
+   * - published.mutate
+   * - published.patch
+   * - complete
+   */
+
+  const shimBufferedDocumentHelpers = (documentId: string) => {
+    const prepare = (id: string) => (document: Partial<SanityDocument>) => {
+      const {_id, _rev, _updatedAt, ...rest} = document
+      return {_id: id, ...rest}
+    }
+
+    const prepareDoc = prepare(documentId)
+
+    const DELETE = {delete: {id: documentId}}
+
+    return {
+      patch: (patches) => patches.map((patch) => ({patch: {...patch, id: documentId}})),
+      create: (document) => ({create: prepareDoc(document)}),
+      createIfNotExists: (document) => ({createIfNotExists: prepareDoc(document)}),
+      createOrReplace: (document) => ({createOrReplace: prepareDoc(document)}),
+      delete: () => DELETE,
+    } satisfies Pick<
+      BufferedDocumentWrapper,
+      'patch' | 'create' | 'createIfNotExists' | 'createOrReplace' | 'delete'
+    >
+  }
+  const {publishedId, draftId} = idPair
 
   return {
     transactionsPendingEvents$,
     draft: {
-      ...draft,
-      events: merge(commits$, reconnect$, draft.events).pipe(map(setVersion('draft'))),
-      consistency$: draft.consistency$,
-      remoteSnapshot$: draft.remoteSnapshot$.pipe(map(setVersion('draft'))),
+      ...shimBufferedDocumentHelpers(draftId),
+      consistency$: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'draft.consistency$'}> =>
+            ev.type === 'draft.consistency$',
+        ),
+        map((ev) => ev.payload),
+      ),
+      events: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'draft.events'}> => ev.type === 'draft.events',
+        ),
+        map((ev) => ev.payload),
+      ),
+      remoteSnapshot$: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'draft.remoteSnapshot$'}> =>
+            ev.type === 'draft.remoteSnapshot$',
+        ),
+        map((ev) => ev.payload),
+      ),
+      commit: () => proxy({type: 'draft.commit'}),
+      mutate: (mutations) => proxy({type: 'draft.mutate', payload: mutations}),
     },
     published: {
-      ...published,
-      events: merge(commits$, reconnect$, published.events).pipe(map(setVersion('published'))),
-      consistency$: published.consistency$,
-      remoteSnapshot$: published.remoteSnapshot$.pipe(map(setVersion('published'))),
+      ...shimBufferedDocumentHelpers(publishedId),
+      consistency$: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'published.consistency$'}> =>
+            ev.type === 'published.consistency$',
+        ),
+        map((ev) => ev.payload),
+      ),
+      events: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'published.events'}> =>
+            ev.type === 'published.events',
+        ),
+        map((ev) => ev.payload),
+      ),
+      remoteSnapshot$: output$.pipe(
+        filter(
+          (ev): ev is Extract<WorkerOutput, {type: 'published.remoteSnapshot$'}> =>
+            ev.type === 'published.remoteSnapshot$',
+        ),
+        map((ev) => ev.payload),
+      ),
+      commit: () => proxy({type: 'published.commit'}),
+      mutate: (mutations) => proxy({type: 'published.mutate', payload: mutations}),
     },
-    complete: () => listenerEventsConnector.complete(),
+    complete: () => {
+      actionsSub.unsubscribe()
+      subscription.unsubscribe()
+
+      // if (!output$.observed) {
+      // eslint-disable-next-line no-console
+      console.log('terminating worker soon')
+      // Schedule teardown to temporarily workaround react strict mode cancelling initial load
+      setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.log('terminating worker now')
+        worker.terminate()
+      }, 10000)
+      // }
+      // return outputConnector.complete()
+    },
   }
 }
+
+export type {
+  DocumentVersion,
+  DocumentVersionEvent,
+  Pair,
+  RemoteSnapshotVersionEvent,
+  WithVersion,
+} from './checkoutPairImplementation'

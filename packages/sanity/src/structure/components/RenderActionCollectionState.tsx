@@ -3,7 +3,7 @@ import {
   type DocumentActionDescription,
   type DocumentActionGroup,
   type DocumentActionProps,
-  GetHookCollectionState,
+  HookCollection,
 } from 'sanity'
 
 /** @internal */
@@ -25,13 +25,8 @@ export const RenderActionCollectionState = (props: RenderActionCollectionProps) 
   const {actions, children, actionProps, onActionComplete, group} = props
 
   return (
-    <GetHookCollectionState
-      onReset={onActionComplete}
-      hooks={actions}
-      args={actionProps}
-      group={group}
-    >
+    <HookCollection onReset={onActionComplete} hooks={actions} args={actionProps} group={group}>
       {children}
-    </GetHookCollectionState>
+    </HookCollection>
   )
 }

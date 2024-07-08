@@ -121,6 +121,9 @@ export async function getViteConfig(options: ViteOptions): Promise<InlineConfig>
       'process.env.MODE': JSON.stringify(mode),
       ...getStudioEnvironmentVariables({prefix: 'process.env.', jsonEncode: true}),
     },
+    worker: {
+      format: 'es',
+    },
   }
 
   if (mode === 'production') {

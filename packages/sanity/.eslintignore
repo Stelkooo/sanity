@@ -6,3 +6,4 @@ presentation.js
 router.js
 structure.js
 /migrate/*
+/web-workers/*

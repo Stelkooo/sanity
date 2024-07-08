@@ -3,7 +3,7 @@ import {
   type DocumentBadgeDescription,
   type DocumentBadgeProps,
   type EditStateFor,
-  GetHookCollectionState,
+  HookCollection,
 } from 'sanity'
 
 /** @internal */
@@ -16,16 +16,15 @@ export interface RenderBadgeCollectionProps {
   badges: Badge<DocumentBadgeProps, DocumentBadgeDescription>[]
   badgeProps: EditStateFor
   children: (props: {states: DocumentBadgeDescription[]}) => ReactNode
-  onActionComplete?: () => void
 }
 
 /** @internal */
 export const RenderBadgeCollectionState = (props: RenderBadgeCollectionProps) => {
-  const {badges, children, badgeProps, ...rest} = props
+  const {badges, children, badgeProps} = props
 
   return (
-    <GetHookCollectionState {...rest} hooks={badges} args={badgeProps}>
+    <HookCollection hooks={badges} args={badgeProps}>
       {children}
-    </GetHookCollectionState>
+    </HookCollection>
   )
 }

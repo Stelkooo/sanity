@@ -1,6 +1,13 @@
 import {Box, Card, Flex, Popover, type PopoverProps, Text, useClickOutside} from '@sanity/ui'
 // eslint-disable-next-line camelcase
-import {cloneElement, type KeyboardEvent, type ReactElement, useCallback, useState} from 'react'
+import {
+  cloneElement,
+  type KeyboardEvent,
+  type ReactElement,
+  useCallback,
+  useRef,
+  useState,
+} from 'react'
 import ReactFocusLock from 'react-focus-lock'
 import {type Path} from 'sanity'
 import {css, styled} from 'styled-components'
@@ -71,15 +78,15 @@ export function TreeEditingBreadcrumbsMenuButton(
     selectedPath,
   } = props
   const [open, setOpen] = useState<boolean>(false)
-  const [rootElement, setRootElement] = useState<HTMLElement | null>(null)
-  const [buttonElement, setButtonElement] = useState<HTMLButtonElement | null>(null)
+  const rootElementRef = useRef<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
 
   const closeAndFocus = useCallback(() => {
     if (!open) return
 
     setOpen(false)
-    buttonElement?.focus()
-  }, [buttonElement, open])
+    buttonRef.current?.focus()
+  }, [open])
 
   const handlePopoverKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
@@ -106,7 +113,10 @@ export function TreeEditingBreadcrumbsMenuButton(
     [onPathSelect],
   )
 
-  useClickOutside(() => setOpen(false), [rootElement, buttonElement])
+  useClickOutside(
+    () => setOpen(false),
+    () => [rootElementRef.current, buttonRef.current],
+  )
 
   const content = (
     <RootFlex direction="column" flex={1} forwardedAs={ReactFocusLock} height="fill" returnFocus>
@@ -142,7 +152,7 @@ export function TreeEditingBreadcrumbsMenuButton(
     'data-testid': 'tree-editing-breadcrumb-menu-button',
     'id': 'tree-breadcrumb-menu-button',
     'onClick': handleButtonClick,
-    'ref': setButtonElement,
+    'ref': buttonRef,
     'selected': open,
   })
 
@@ -157,7 +167,7 @@ export function TreeEditingBreadcrumbsMenuButton(
       open={open}
       placement="bottom-start"
       portal
-      ref={setRootElement}
+      ref={rootElementRef}
       referenceBoundary={parentElement}
     >
       {clonedButton}

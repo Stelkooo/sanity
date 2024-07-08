@@ -7,6 +7,7 @@ import {version} from '../package.json'
 export const defaultConfig: UserConfig = {
   appType: 'custom',
   define: {
+    '__DEV__': 'false',
     'process.env.PKG_VERSION': JSON.stringify(version),
     'process.env.NODE_ENV': '"production"',
     'process.env': {},
@@ -19,7 +20,13 @@ export const defaultConfig: UserConfig = {
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', /^react-dom/, 'react/jsx-runtime', 'styled-components'],
+      external: [
+        'react',
+        /^react-dom/,
+        'react/jsx-runtime',
+        'styled-components',
+        './checkoutPairWorker.ts',
+      ],
       output: {
         exports: 'named',
         dir: 'dist',
@@ -29,5 +36,8 @@ export const defaultConfig: UserConfig = {
         preset: 'recommended',
       },
     },
+  },
+  worker: {
+    format: 'es',
   },
 }
