@@ -68,11 +68,15 @@ const TableInner = <D, AdditionalD>({
             display="flex"
             margin={-1}
           >
-            {columnDefs.map(({cell: Cell, id, sorting = false}) => (
+            {columnDefs.map(({cell: Cell, width, id, sorting = false}) => (
               <Fragment key={String(id)}>
                 <Cell
                   datum={datum as D & AdditionalD}
-                  cellProps={{as: 'td', id: String(id)}}
+                  cellProps={{
+                    as: 'td',
+                    id: String(id),
+                    style: {width: width || undefined},
+                  }}
                   router={router}
                   sorting={sorting}
                 />
@@ -126,6 +130,7 @@ const TableInner = <D, AdditionalD>({
       <TableHeader
         headers={columnDefs.map((column) => ({
           header: column.header,
+          width: column.width,
           id: column.id,
           sorting: column.sorting,
         }))}

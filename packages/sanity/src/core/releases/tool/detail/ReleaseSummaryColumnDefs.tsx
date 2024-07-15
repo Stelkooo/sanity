@@ -16,6 +16,7 @@ export const getReleaseSummaryColumnDefs = (
 ): Column<DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>>[] => [
   {
     id: 'search',
+    width: null,
     header: (props) => <TableHeaderSearch {...props} placeholder="Search documents" />,
     cell: ({cellProps, datum: document}) => (
       <Box {...cellProps} flex={1} padding={1}>
@@ -28,20 +29,14 @@ export const getReleaseSummaryColumnDefs = (
   {
     id: '_createdAt',
     sorting: true,
+    width: 130,
     header: (headerProps) => (
-      <Flex {...headerProps.headerProps} paddingY={3} sizing="border" style={{width: 130}}>
+      <Flex {...headerProps.headerProps} paddingY={3} sizing="border">
         <SortHeaderButton text="Created" {...headerProps} />
       </Flex>
     ),
     cell: ({cellProps, datum: document}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 130}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         {document._createdAt && (
           <Flex align="center" gap={2}>
             {document.history?.createdBy && (
@@ -58,20 +53,14 @@ export const getReleaseSummaryColumnDefs = (
   {
     id: '_updatedAt',
     sorting: true,
+    width: 130,
     header: (props) => (
-      <Flex {...props.headerProps} paddingY={3} sizing="border" style={{width: 130}}>
+      <Flex {...props.headerProps} paddingY={3} sizing="border">
         <SortHeaderButton text="Edited" {...props} />
       </Flex>
     ),
     cell: ({cellProps, datum: document}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 130}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         {document._updatedAt && (
           <Flex align="center" gap={2}>
             {document.history?.lastEditedBy && (
@@ -88,20 +77,14 @@ export const getReleaseSummaryColumnDefs = (
   {
     id: '_publishedAt',
     sorting: true,
+    width: 130,
     header: (props) => (
-      <Flex {...props.headerProps} paddingY={3} sizing="border" style={{width: 130}}>
+      <Flex {...props.headerProps} paddingY={3} sizing="border">
         <SortHeaderButton text="Published" {...props} />
       </Flex>
     ),
     cell: ({cellProps, datum: document}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 130}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         {/* TODO: How to get the publishedAt date from the document, consider history API */}
         {/* {document._publishedAt && (
       <Flex align="center" gap={2}>
@@ -123,8 +106,9 @@ export const getReleaseSummaryColumnDefs = (
   {
     id: 'contributors',
     sorting: false,
+    width: 100,
     header: (props) => (
-      <Flex {...props.headerProps} paddingY={3} sizing="border" style={{width: 100}}>
+      <Flex {...props.headerProps} paddingY={3} sizing="border">
         <Box padding={2}>
           <Text muted size={1} weight="medium">
             Contributors
@@ -133,14 +117,7 @@ export const getReleaseSummaryColumnDefs = (
       </Flex>
     ),
     cell: ({datum: document, cellProps}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 100}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         <AvatarStack maxLength={3} size={0}>
           {document.history?.editors?.map((userId) => <UserAvatar key={userId} user={userId} />)}
         </AvatarStack>
@@ -150,8 +127,9 @@ export const getReleaseSummaryColumnDefs = (
   {
     id: 'actions',
     sorting: false,
+    width: 49,
     header: ({headerProps}) => (
-      <Flex {...headerProps} paddingY={3} sizing="border" style={{width: 49}}>
+      <Flex {...headerProps} paddingY={3} sizing="border">
         <Box padding={2}>
           <Text muted size={1} weight="medium">
             &nbsp;
@@ -159,7 +137,7 @@ export const getReleaseSummaryColumnDefs = (
         </Box>
       </Flex>
     ),
-    cell: ({datum: document, cellProps}) => (
+    cell: ({datum: document, cellProps: {style, ...cellProps}}) => (
       // Actions is empty - don't render yet
       <Flex {...cellProps} align="center" flex="none" padding={3}>
         <DocumentActions document={document} />

@@ -5,6 +5,7 @@ import {type TableContextValue} from './tableContext'
 export interface InjectedTableProps {
   as?: React.ElementType | keyof JSX.IntrinsicElements
   id: string
+  style: {width?: number}
 }
 
 export interface Column<D = any> {
@@ -16,6 +17,7 @@ export interface Column<D = any> {
     router: RouterContextValue
   }) => React.ReactNode
   id: keyof D | string
+  width: number | null
   sorting?: boolean
 }
 

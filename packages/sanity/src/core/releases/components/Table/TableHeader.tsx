@@ -50,10 +50,14 @@ export const TableHeader = ({headers, searchDisabled}: TableHeaderProps) => {
   return (
     <Card as="thead" radius={3}>
       <Flex as="tr">
-        {headers.map(({header: Header, id, sorting}) => (
+        {headers.map(({header: Header, width, id, sorting}) => (
           <Header
             key={String(id)}
-            headerProps={{as: 'th', id: String(id)}}
+            headerProps={{
+              as: 'th',
+              id: String(id),
+              style: {width: width || undefined},
+            }}
             header={{id, sorting}}
             searchDisabled={searchDisabled}
           />
