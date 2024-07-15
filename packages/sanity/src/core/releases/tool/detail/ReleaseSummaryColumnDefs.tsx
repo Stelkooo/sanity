@@ -117,9 +117,13 @@ export const getReleaseSummaryColumnDefs = (
     ),
     cell: ({datum: document, cellProps}) => (
       <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
-        <AvatarStack maxLength={3} size={0}>
-          {document.history?.editors?.map((userId) => <UserAvatar key={userId} user={userId} />)}
-        </AvatarStack>
+        {document.history?.editors && (
+          <AvatarStack maxLength={3} size={0}>
+            {document.history.editors.map((userId) => (
+              <UserAvatar key={userId} user={userId} />
+            ))}
+          </AvatarStack>
+        )}
       </Flex>
     ),
   },
