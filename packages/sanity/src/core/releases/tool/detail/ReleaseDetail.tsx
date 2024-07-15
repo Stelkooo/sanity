@@ -12,7 +12,7 @@ import {API_VERSION} from '../../../tasks/constants'
 import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
 import {type ReleasesRouterState} from '../../types/router'
 import {useReleaseHistory} from './documentTable/useReleaseHistory'
-import {ReleaseOverview} from './ReleaseOverview'
+import {ReleaseSummary} from './ReleaseSummary'
 
 type Screen = 'overview' | 'review'
 
@@ -131,7 +131,7 @@ export const ReleaseDetail = () => {
             ) : (
               <>
                 {activeScreen === 'overview' && (
-                  <ReleaseOverview
+                  <ReleaseSummary
                     documents={bundleDocuments}
                     release={bundle}
                     documentsHistory={history.documentsHistory}

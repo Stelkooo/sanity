@@ -15,17 +15,20 @@ export interface InjectedTableProps {
   id: string
 }
 
-export interface Column<D> {
-  header: (props: HeaderProps<D>) => JSX.Element
-  cell: (
-    props: D & {cellProps: InjectedTableProps} & {sorting: boolean; router: RouterContextValue},
-  ) => React.ReactNode
-  id: keyof D
+export interface Column<D = any> {
+  header: (props: HeaderProps) => JSX.Element
+  cell: (props: {
+    datum: D
+    cellProps: InjectedTableProps
+    sorting: boolean
+    router: RouterContextValue
+  }) => React.ReactNode
+  id: keyof D | string
   sorting?: boolean
 }
 
-export interface TableProps<D> {
-  columnDefs: Column<D>[]
+export interface TableProps<D, AdditionalD> {
+  columnDefs: AdditionalD extends undefined ? Column<D>[] : Column<D & AdditionalD>[]
   searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
   Row?: ({
     datum,
@@ -55,7 +58,7 @@ const RowStack = styled(Stack)({
   },
 })
 
-const TableInner = <D,>({
+const TableInner = <D, AdditionalD>({
   columnDefs,
   data,
   loading,
@@ -63,7 +66,7 @@ const TableInner = <D,>({
   searchFilterPredicate,
   Row,
   rowId,
-}: TableProps<D>) => {
+}: TableProps<D, AdditionalD>) => {
   const router = useRouter()
   const {searchTerm, sort} = useTableContext()
 
@@ -110,28 +113,30 @@ const TableInner = <D,>({
       return emptyState()
     }
 
-    const renderRow = (rowIndex: number) => (datum: D) => (
-      <Card
-        key={rowId ? String(datum[rowId]) : rowIndex}
-        data-testid="table-row"
-        as="tr"
-        border
-        radius={3}
-        display="flex"
-        margin={-1}
-      >
-        {columnDefs.map(({cell: Cell, id, sorting = false}) => (
-          <Fragment key={String(id)}>
-            <Cell
-              {...datum}
-              cellProps={{as: 'td', id: String(id)}}
-              router={router}
-              sorting={sorting}
-            />
-          </Fragment>
-        ))}
-      </Card>
-    )
+    const renderRow = (rowIndex: number) => (datum: D | (D & AdditionalD)) => {
+      return (
+        <Card
+          key={rowId ? String(datum[rowId]) : rowIndex}
+          data-testid="table-row"
+          as="tr"
+          border
+          radius={3}
+          display="flex"
+          margin={-1}
+        >
+          {columnDefs.map(({cell: Cell, id, sorting = false}) => (
+            <Fragment key={String(id)}>
+              <Cell
+                datum={datum as D & AdditionalD}
+                cellProps={{as: 'td', id: String(id)}}
+                router={router}
+                sorting={sorting}
+              />
+            </Fragment>
+          ))}
+        </Card>
+      )
+    }
 
     return filteredData.map((datum, rowIndex) => {
       if (!Row) return renderRow(rowIndex)(datum)
@@ -149,7 +154,7 @@ const TableInner = <D,>({
 
   return (
     <Stack as="table" space={1}>
-      <TableHeader<D>
+      <TableHeader
         headers={columnDefs.map((column) => ({
           header: column.header,
           id: column.id,
@@ -162,10 +167,10 @@ const TableInner = <D,>({
   )
 }
 
-export const Table = (props: TableProps<D>) => {
+export const Table = <D, AD = undefined>(props: TableProps<D, AD>) => {
   return (
     <TableProvider>
-      <TableInner {...props} />
+      <TableInner<D, AD> {...props} />
     </TableProvider>
   )
 }

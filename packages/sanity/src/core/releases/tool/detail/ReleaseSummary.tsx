@@ -1,8 +1,8 @@
 import {DocumentsIcon} from '@sanity/icons'
 import {type SanityDocument} from '@sanity/types'
-import {AvatarStack, Box, Card, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
-import {type ForwardedRef, forwardRef, useCallback, useState} from 'react'
-import {getPublishedId, SanityDefaultPreview} from 'sanity'
+import {AvatarStack, Card, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
+import {type ForwardedRef, forwardRef, useCallback, useMemo, useState} from 'react'
+import {getPublishedId} from 'sanity'
 import {IntentLink} from 'sanity/router'
 
 import {
@@ -15,12 +15,16 @@ import {type BundleDocument} from '../../../store/bundles/types'
 import {useAddonDataset} from '../../../studio/addonDataset/useAddonDataset'
 import {Chip} from '../../components/Chip'
 import {Table, type TableProps} from '../../components/Table/Table'
-import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
+import {getReleaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
+
+export type DocumentWithHistory = SanityDocument & {history: DocumentHistory | undefined}
 
 const getRow =
-  (release: BundleDocument): TableProps<SanityDocument>['Row'] =>
+  (
+    release: BundleDocument,
+  ): TableProps<DocumentWithHistory, ReturnType<typeof useDocumentPreviewValues>>['Row'] =>
   ({children, searchTerm, datum}) => {
     const {previewValues, isLoading} = useDocumentPreviewValues({document: datum, release})
 
@@ -34,7 +38,7 @@ const getRow =
     return children({...datum, previewValues, isLoading})
   }
 
-export function ReleaseOverview(props: {
+export function ReleaseSummary(props: {
   documents: SanityDocument[]
   documentsHistory: Map<string, DocumentHistory>
   collaborators: string[]
@@ -92,6 +96,20 @@ export function ReleaseOverview(props: {
         )
       }),
     [release.name],
+  )
+
+  const aggregatedData = useMemo(
+    () =>
+      documents.map((document) => ({
+        ...document,
+        history: documentsHistory.get(document._id),
+      })),
+    [documents, documentsHistory],
+  )
+
+  const releaseSummaryColumnDefs = useMemo(
+    () => getReleaseSummaryColumnDefs(getLinkComponent),
+    [getLinkComponent],
   )
 
   return (
@@ -162,64 +180,19 @@ export function ReleaseOverview(props: {
         </Flex>
       </Stack>
 
-      {/* {documents.length === 0 && (
-        <Card border padding={4} radius={3}>
-          <Text align="center" muted size={1}>
-            No documents
-          </Text>
-        </Card>
-      )}
-
-      {documents.length > 0 && (
-        <DocumentTable
-          documents={documents}
-          release={release}
-          documentsHistory={documentsHistory}
-        />
-      )} */}
-      <Table
-        data={documents}
+      <Table<
+        (typeof aggregatedData)[0],
+        {
+          previewValues: ReturnType<typeof useDocumentPreviewValues>['previewValues']
+          isLoading: ReturnType<typeof useDocumentPreviewValues>['isLoading']
+        }
+      >
+        data={aggregatedData}
         loading={false}
         emptyState={'No documents'}
         rowId="_id"
         Row={getRow(release)}
-        columnDefs={[
-          {
-            id: 'search',
-            header: TableHeaderSearch,
-            cell: ({cellProps, ...document}) => (
-              <Box flex={1} padding={1}>
-                <Card as={getLinkComponent(document._id, document._type)} radius={2} data-as="a">
-                  <SanityDefaultPreview
-                    {...document.previewValues}
-                    isPlaceholder={document.isLoading}
-                  />
-                </Card>
-              </Box>
-            ),
-          },
-          {
-            id: '_createdAt',
-            sorting: true,
-            header: (props) => (
-              <Flex {...props} paddingY={3} sizing="border" style={{width: 130}}>
-                <SortHeaderButton text="Created" {...props} />
-              </Flex>
-            ),
-            cell: ({cellProps, ...document}) => (
-              <Flex align="center" paddingX={2} paddingY={3} sizing="border" style={{width: 130}}>
-                {document._createdAt && (
-                  <Flex align="center" gap={2}>
-                    {history.createdBy && <UserAvatar size={0} user={history.createdBy} />}
-                    <Text muted size={1}>
-                      <RelativeTime time={document._createdAt} useTemporalPhrase minimal />
-                    </Text>
-                  </Flex>
-                )}
-              </Flex>
-            ),
-          },
-        ]}
+        columnDefs={releaseSummaryColumnDefs}
       />
     </Stack>
   )

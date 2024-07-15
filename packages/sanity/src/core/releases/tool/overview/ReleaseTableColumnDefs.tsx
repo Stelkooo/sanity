@@ -6,7 +6,7 @@ import {type TableBundle} from '../../components/ReleasesTable/ReleasesTable'
 import {type Column} from '../../components/Table/Table'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 
-const ReleaseNameCell: Column<TableBundle>['cell'] = ({cellProps, router, ...bundle}) => {
+const ReleaseNameCell: Column<TableBundle>['cell'] = ({cellProps, router, datum: bundle}) => {
   return (
     <Box {...cellProps} flex={1} padding={1}>
       <Card
@@ -52,7 +52,7 @@ export const columnDefs: Column<TableBundle>[] = [
         </Box>
       </Flex>
     ),
-    cell: ({documentsMetadata, cellProps}) => (
+    cell: ({datum: {documentsMetadata}, cellProps}) => (
       <Flex
         {...cellProps}
         align="center"
@@ -75,7 +75,7 @@ export const columnDefs: Column<TableBundle>[] = [
         <SortHeaderButton text="Created" {...props} />
       </Flex>
     ),
-    cell: ({cellProps, ...bundle}) => (
+    cell: ({cellProps, datum: bundle}) => (
       <Flex
         {...cellProps}
         align="center"
@@ -100,7 +100,7 @@ export const columnDefs: Column<TableBundle>[] = [
         <SortHeaderButton text="Edited" {...props} />
       </Flex>
     ),
-    cell: ({documentsMetadata, cellProps}) => (
+    cell: ({datum: {documentsMetadata}, cellProps}) => (
       <Flex
         {...cellProps}
         align="center"
@@ -134,7 +134,7 @@ export const columnDefs: Column<TableBundle>[] = [
         <SortHeaderButton text="Published" {...props} />
       </Flex>
     ),
-    cell: ({cellProps, ...bundle}) => (
+    cell: ({cellProps, datum: bundle}) => (
       <Flex
         {...cellProps}
         align="center"
@@ -165,7 +165,7 @@ export const columnDefs: Column<TableBundle>[] = [
         style={{width: 50}}
       />
     ),
-    cell: ({cellProps, ...bundle}) => (
+    cell: ({cellProps, datum: bundle}) => (
       <Flex {...cellProps} align="center" flex="none" padding={3}>
         <BundleMenuButton bundle={bundle} documentCount={bundle.documentsMetadata.documentCount} />
       </Flex>

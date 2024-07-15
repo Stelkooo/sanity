@@ -1,22 +1,20 @@
 import {ArrowDownIcon, ArrowUpIcon, SearchIcon} from '@sanity/icons'
-import {Card, Flex, Stack, TextInput} from '@sanity/ui'
+import {Button, type ButtonProps, Card, Flex, Stack, TextInput} from '@sanity/ui'
 
-import {Button, type ButtonProps} from '../../../../ui-components'
 import {type Column, type InjectedTableProps} from './Table'
 import {useTableContext} from './tableContext'
 
-export interface TableHeaderProps<D> {
-  headers: Omit<Column<D>, 'cell'>[]
+export interface TableHeaderProps {
+  headers: Omit<Column, 'cell'>[]
   searchDisabled?: boolean
 }
 
-export type HeaderProps<D> = Omit<TableHeaderProps<D>, 'headers'> & {
-  // eslint-disable-next-line react/no-unused-prop-types
+export type HeaderProps = Omit<TableHeaderProps, 'headers'> & {
   headerProps: InjectedTableProps
-  header: Pick<Column<D>, 'sorting' | 'id'>
+  header: Pick<Column, 'sorting' | 'id'>
 }
 
-export const SortHeaderButton = <D,>(props: ButtonProps & HeaderProps<D>) => {
+export const SortHeaderButton = ({headerProps, ...props}: ButtonProps & HeaderProps) => {
   const {sort, setSearchColumn} = useTableContext()
   const sortIcon = sort?.direction === 'asc' ? ArrowUpIcon : ArrowDownIcon
 
@@ -25,17 +23,15 @@ export const SortHeaderButton = <D,>(props: ButtonProps & HeaderProps<D>) => {
       iconRight={props.header.sorting && sort?.column === props.header.id ? sortIcon : undefined}
       onClick={() => setSearchColumn(String(props.header.id))}
       mode="bleed"
-      style={{
-        padding: 2,
-        borderRadius: 3,
-        gap: 1,
-      }}
+      padding={2}
+      radius={3}
+      space={1}
       text={props.text}
     />
   )
 }
 
-export const TableHeaderSearch = <D,>({headerProps, searchDisabled}: HeaderProps<D>) => {
+export const TableHeaderSearch = ({headerProps, searchDisabled}: HeaderProps) => {
   const {setSearchTerm, searchTerm} = useTableContext()
 
   return (
@@ -56,7 +52,7 @@ export const TableHeaderSearch = <D,>({headerProps, searchDisabled}: HeaderProps
   )
 }
 
-export const TableHeader = <D,>({headers, ...restProps}: TableHeaderProps<D>) => {
+export const TableHeader = ({headers, searchDisabled}: TableHeaderProps) => {
   return (
     <Card as="thead" radius={3}>
       <Flex as="tr">
@@ -65,7 +61,7 @@ export const TableHeader = <D,>({headers, ...restProps}: TableHeaderProps<D>) =>
             key={String(id)}
             headerProps={{as: 'th', id: String(id)}}
             header={{id, sorting}}
-            {...restProps}
+            searchDisabled={searchDisabled}
           />
         ))}
       </Flex>

@@ -20,7 +20,6 @@ export function ReleasesOverview() {
   const {data: bundles, loading: loadingBundles} = useBundles()
   const [bundleGroupMode, setBundleGroupMode] = useState<Mode>('open')
   const [isCreateBundleDialogOpen, setIsCreateBundleDialogOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState<string>()
   const bundleSlugs = useMemo(() => bundles?.map((bundle) => bundle.name) || [], [bundles])
   const {data: bundlesMetadata, loading: loadingBundlesMetadata} = useBundlesMetadata(bundleSlugs)
   const loading = loadingBundles || loadingBundlesMetadata
@@ -55,9 +54,6 @@ export function ReleasesOverview() {
       setBundleGroupMode('open')
     }
   }, [bundleGroupMode, groupedBundles.archived.length])
-
-  // clear search when mode changes
-  useEffect(() => setSearchTerm(''), [bundleGroupMode])
 
   const handleBundleGroupModeChange = useCallback<MouseEventHandler<HTMLButtonElement>>(
     ({currentTarget: {value: groupMode}}) => {
@@ -129,17 +125,6 @@ export function ReleasesOverview() {
       />
     )
   }
-
-  // const applySearchTermToBundles = useCallback(
-  //   (bundle: BundleDocument) =>
-  //     !searchTerm || bundle.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()),
-  //   [searchTerm],
-  // )
-
-  // const filteredBundles = useMemo(
-  //   () => groupedBundles[bundleGroupMode]?.filter(applySearchTermToBundles) || [],
-  //   [applySearchTermToBundles, bundleGroupMode, groupedBundles],
-  // )
 
   const applySearchTermToBundles = useCallback(
     (unfilteredData: TableBundle[], tableSearchTerm: string) => {
