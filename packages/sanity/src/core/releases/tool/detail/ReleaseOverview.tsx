@@ -1,7 +1,9 @@
 import {DocumentsIcon} from '@sanity/icons'
 import {type SanityDocument} from '@sanity/types'
-import {AvatarStack, Card, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
-import {useCallback, useState} from 'react'
+import {AvatarStack, Box, Card, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
+import {type ForwardedRef, forwardRef, useCallback, useState} from 'react'
+import {getPublishedId, SanityDefaultPreview} from 'sanity'
+import {IntentLink} from 'sanity/router'
 
 import {
   BundleIconEditorPicker,
@@ -12,8 +14,24 @@ import {UserAvatar} from '../../../components/userAvatar/UserAvatar'
 import {type BundleDocument} from '../../../store/bundles/types'
 import {useAddonDataset} from '../../../studio/addonDataset/useAddonDataset'
 import {Chip} from '../../components/Chip'
-import {DocumentTable} from './documentTable'
+import {Table} from '../../components/Table/Table'
+import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
+import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
+
+const getRow = (release) =>
+  forwardRef(function RowInner({children, searchTerm, datum}) {
+    const {previewValues, isLoading} = useDocumentPreviewValues({document: datum, release})
+
+    if (searchTerm) {
+      // Early return to filter out documents that don't match the search term
+      const fallbackTitle = typeof document.title === 'string' ? document.title : 'Untitled'
+      const title = typeof previewValues.title === 'string' ? previewValues.title : fallbackTitle
+      if (!title.toLowerCase().includes(searchTerm.toLowerCase())) return null
+    }
+
+    return children({...datum, previewValues, isLoading})
+  })
 
 export function ReleaseOverview(props: {
   documents: SanityDocument[]
@@ -53,6 +71,26 @@ export function ReleaseOverview(props: {
       }
     },
     [client, release._id, toast],
+  )
+
+  const getLinkComponent = useCallback(
+    (documentId, documentTypeName) =>
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      forwardRef(function LinkComponent(linkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+        return (
+          <IntentLink
+            {...linkProps}
+            intent="edit"
+            params={{
+              id: getPublishedId(documentId, true),
+              type: documentTypeName,
+            }}
+            searchParams={[['perspective', `bundle.${release.name}`]]}
+            ref={ref}
+          />
+        )
+      }),
+    [release.name],
   )
 
   return (
@@ -123,7 +161,7 @@ export function ReleaseOverview(props: {
         </Flex>
       </Stack>
 
-      {documents.length === 0 && (
+      {/* {documents.length === 0 && (
         <Card border padding={4} radius={3}>
           <Text align="center" muted size={1}>
             No documents
@@ -137,7 +175,51 @@ export function ReleaseOverview(props: {
           release={release}
           documentsHistory={documentsHistory}
         />
-      )}
+      )} */}
+      <Table
+        data={documents}
+        loading={false}
+        emptyState={'No documents'}
+        rowId="_id"
+        Row={getRow(release)}
+        columnDefs={[
+          {
+            id: 'search',
+            header: TableHeaderSearch,
+            cell: ({cellProps, ...document}) => (
+              <Box flex={1} padding={1}>
+                <Card as={getLinkComponent(document._id, document._type)} radius={2} data-as="a">
+                  <SanityDefaultPreview
+                    {...document.previewValues}
+                    isPlaceholder={document.isLoading}
+                  />
+                </Card>
+              </Box>
+            ),
+          },
+          {
+            id: '_createdAt',
+            sorting: true,
+            header: (props) => (
+              <Flex {...props} paddingY={3} sizing="border" style={{width: 130}}>
+                <SortHeaderButton text="Created" {...props} />
+              </Flex>
+            ),
+            cell: ({cellProps, ...document}) => (
+              <Flex align="center" paddingX={2} paddingY={3} sizing="border" style={{width: 130}}>
+                {document._createdAt && (
+                  <Flex align="center" gap={2}>
+                    {history.createdBy && <UserAvatar size={0} user={history.createdBy} />}
+                    <Text muted size={1}>
+                      <RelativeTime time={document._createdAt} useTemporalPhrase minimal />
+                    </Text>
+                  </Flex>
+                )}
+              </Flex>
+            ),
+          },
+        ]}
+      />
     </Stack>
   )
 }

@@ -25,7 +25,8 @@ export interface Column<D> {
 
 interface TableProps<D> {
   columnDefs: Column<D>[]
-  searchFilterPredicate: (data: D[], searchTerm: string) => D[]
+  searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
+  Row?: () => any
   data: D[]
   emptyState: (() => JSX.Element) | string
   loading: boolean
@@ -51,6 +52,7 @@ export const Table = <D,>({
   loading,
   emptyState,
   searchFilterPredicate,
+  Row,
   rowId,
 }: TableProps<D>) => {
   const router = useRouter()
@@ -59,7 +61,8 @@ export const Table = <D,>({
     null,
   )
   const filteredData = useMemo(() => {
-    const filteredResult = searchTerm ? searchFilterPredicate(data, searchTerm) : data
+    const filteredResult =
+      searchTerm && searchFilterPredicate ? searchFilterPredicate(data, searchTerm) : data
     if (!sort) return filteredResult
 
     return [...filteredResult].sort((a, b) => {
@@ -100,7 +103,7 @@ export const Table = <D,>({
       return emptyState()
     }
 
-    return filteredData.map((datum, rowIndex) => (
+    const renderRow = (rowIndex) => (datum) => (
       <Card
         key={rowId ? String(datum[rowId]) : rowIndex}
         data-testid="table-row"
@@ -121,8 +124,17 @@ export const Table = <D,>({
           </Fragment>
         ))}
       </Card>
-    ))
-  }, [columnDefs, emptyState, filteredData, router, rowId])
+    )
+
+    return filteredData.map((datum, rowIndex) => {
+      if (!Row) return renderRow(rowIndex)(datum)
+      return (
+        <Row key={rowId ? String(datum[rowId]) : rowIndex} datum={datum} searchTerm={searchTerm}>
+          {renderRow(rowIndex)}
+        </Row>
+      )
+    })
+  }, [columnDefs, emptyState, filteredData, router, rowId, searchTerm])
 
   if (loading) {
     return <LoadingBlock fill data-testid="table-loading" />
