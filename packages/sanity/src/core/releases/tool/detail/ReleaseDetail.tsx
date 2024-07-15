@@ -39,7 +39,16 @@ export const ReleaseDetail = () => {
 
   const header = useMemo(
     () => (
-      <Card flex="none" padding={3}>
+      <Card
+        flex="none"
+        padding={3}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          backgroundColor: 'var(--card-bg-color)',
+        }}
+      >
         <Flex>
           <Flex align="baseline" flex={1} gap={2}>
             <Flex gap={1}>

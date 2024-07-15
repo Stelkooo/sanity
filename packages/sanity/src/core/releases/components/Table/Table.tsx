@@ -1,14 +1,37 @@
-import {Card, Stack, Text} from '@sanity/ui'
+import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
 import {Fragment, useCallback, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
 import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
-import {useTableContext} from './tableContext'
+import {type TableContextValue, useTableContext} from './tableContext'
 import {TableHeader} from './TableHeader'
 import {TableProvider} from './TableProvider'
-import {type TableProps} from './types'
+import {type Column} from './types'
+
+export interface TableProps<D, AdditionalD> {
+  columnDefs: AdditionalD extends undefined ? Column<D>[] : Column<D & AdditionalD>[]
+  searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
+  Row?: ({
+    datum,
+    children,
+    searchTerm,
+  }: {
+    datum: D
+    children: (rowData: D) => JSX.Element
+    searchTerm: TableContextValue['searchTerm']
+  }) => JSX.Element | null
+  data: D[]
+  emptyState: (() => JSX.Element) | string
+  loading: boolean
+  rowId?: keyof D
+  rowActions?: ({
+    datum,
+  }: {
+    datum: AdditionalD extends undefined ? D : D & AdditionalD
+  }) => JSX.Element
+}
 
 const RowStack = styled(Stack)({
   '& > *:not(:first-child)': {
@@ -31,6 +54,7 @@ const TableInner = <D, AdditionalD>({
   searchFilterPredicate,
   Row,
   rowId,
+  rowActions,
 }: TableProps<D, AdditionalD>) => {
   const router = useRouter()
   const {searchTerm, sort} = useTableContext()
@@ -55,6 +79,34 @@ const TableInner = <D, AdditionalD>({
     })
   }, [data, searchFilterPredicate, searchTerm, sort])
 
+  const rowActionColumnDef: Column = useMemo(
+    () => ({
+      id: 'actions',
+      sorting: false,
+      width: 50,
+      header: ({headerProps: {id}}) => (
+        <Flex as="th" id={id} paddingY={3} sizing="border" style={{width: 50}}>
+          <Box padding={2}>
+            <Text muted size={1} weight="medium">
+              &nbsp;
+            </Text>
+          </Box>
+        </Flex>
+      ),
+      cell: ({datum, cellProps: {id}}) => (
+        <Flex as="td" id={id} align="center" flex="none" padding={3}>
+          {rowActions?.({datum})}
+        </Flex>
+      ),
+    }),
+    [rowActions],
+  )
+
+  const _columnDefs = useMemo(
+    () => (rowActions ? [...columnDefs, rowActionColumnDef] : columnDefs),
+    [columnDefs, rowActionColumnDef, rowActions],
+  )
+
   const renderRow = useCallback(
     (rowIndex: number) =>
       function TableRow(datum: D | (D & AdditionalD)) {
@@ -68,7 +120,7 @@ const TableInner = <D, AdditionalD>({
             display="flex"
             margin={-1}
           >
-            {columnDefs.map(({cell: Cell, width, id, sorting = false}) => (
+            {_columnDefs.map(({cell: Cell, width, id, sorting = false}) => (
               <Fragment key={String(id)}>
                 <Cell
                   datum={datum as D & AdditionalD}
@@ -85,7 +137,7 @@ const TableInner = <D, AdditionalD>({
           </Card>
         )
       },
-    [columnDefs, router, rowId],
+    [_columnDefs, router, rowId],
   )
 
   const tableContent = useMemo(() => {
@@ -121,21 +173,15 @@ const TableInner = <D, AdditionalD>({
     })
   }, [Row, emptyState, filteredData, renderRow, rowId, searchTerm])
 
+  const headers = useMemo(() => _columnDefs.map(({cell, ...header}) => header), [_columnDefs])
+
   if (loading) {
     return <LoadingBlock fill data-testid="table-loading" />
   }
 
   return (
     <Stack as="table" space={1}>
-      <TableHeader
-        headers={columnDefs.map((column) => ({
-          header: column.header,
-          width: column.width,
-          id: column.id,
-          sorting: column.sorting,
-        }))}
-        searchDisabled={!searchTerm && !data.length}
-      />
+      <TableHeader headers={headers} searchDisabled={!searchTerm && !data.length} />
       <RowStack as="tbody">{tableContent}</RowStack>
     </Stack>
   )

@@ -7,6 +7,7 @@ import {type BundleDocument} from 'sanity'
 import {Button as StudioButton} from '../../../../ui-components'
 import {CreateBundleDialog} from '../../../bundles/components/dialog/CreateBundleDialog'
 import {useBundles} from '../../../store/bundles/useBundles'
+import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
 import {Table} from '../../components/Table/Table'
 import {containsBundles} from '../../types/bundle'
 import {type BundlesMetadata, useBundlesMetadata} from '../useBundlesMetadata'
@@ -139,6 +140,13 @@ export function ReleasesOverview() {
     [],
   )
 
+  const renderRowActions = useCallback(
+    ({datum: bundle}: {datum: TableBundle}) => (
+      <BundleMenuButton bundle={bundle} documentCount={bundle.documentsMetadata.documentCount} />
+    ),
+    [],
+  )
+
   return (
     <Card flex={1} overflow="auto">
       <Container width={3}>
@@ -173,6 +181,7 @@ export function ReleasesOverview() {
             searchFilterPredicate={applySearchTermToBundles}
             emptyState={'No Releases'}
             rowId="_id"
+            rowActions={renderRowActions}
           />
         </Stack>
       </Container>

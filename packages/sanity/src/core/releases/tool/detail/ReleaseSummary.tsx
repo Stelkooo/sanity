@@ -14,8 +14,8 @@ import {UserAvatar} from '../../../components/userAvatar/UserAvatar'
 import {type BundleDocument} from '../../../store/bundles/types'
 import {useAddonDataset} from '../../../studio/addonDataset/useAddonDataset'
 import {Chip} from '../../components/Chip'
-import {Table} from '../../components/Table/Table'
-import {type TableProps} from '../../components/Table/types'
+import {Table, type TableProps} from '../../components/Table/Table'
+import {DocumentActions} from './documentTable/DocumentActions'
 import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
 import {getReleaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
@@ -114,6 +114,11 @@ export function ReleaseSummary(props: {
   )
   const Row = useMemo(() => getRow(release), [release])
 
+  const renderRowActions: ({datum}: {datum: SanityDocument}) => JSX.Element = useCallback(
+    ({datum: document}) => <DocumentActions document={document} />,
+    [],
+  )
+
   return (
     <Stack paddingX={4} space={5}>
       <Stack space={4}>
@@ -189,6 +194,7 @@ export function ReleaseSummary(props: {
         rowId="_id"
         Row={Row}
         columnDefs={releaseSummaryColumnDefs}
+        rowActions={renderRowActions}
       />
     </Stack>
   )

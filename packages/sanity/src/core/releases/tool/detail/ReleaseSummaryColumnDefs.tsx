@@ -4,7 +4,6 @@ import {RelativeTime, SanityDefaultPreview, type SanityDocument, UserAvatar} fro
 
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {type Column} from '../../components/Table/types'
-import {DocumentActions} from './documentTable/DocumentActions'
 import {type useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentWithHistory} from './ReleaseSummary'
 
@@ -121,26 +120,6 @@ export const getReleaseSummaryColumnDefs = (
         <AvatarStack maxLength={3} size={0}>
           {document.history?.editors?.map((userId) => <UserAvatar key={userId} user={userId} />)}
         </AvatarStack>
-      </Flex>
-    ),
-  },
-  {
-    id: 'actions',
-    sorting: false,
-    width: 49,
-    header: ({headerProps}) => (
-      <Flex {...headerProps} paddingY={3} sizing="border">
-        <Box padding={2}>
-          <Text muted size={1} weight="medium">
-            &nbsp;
-          </Text>
-        </Box>
-      </Flex>
-    ),
-    cell: ({datum: document, cellProps: {style, ...cellProps}}) => (
-      // Actions is empty - don't render yet
-      <Flex {...cellProps} align="center" flex="none" padding={3}>
-        <DocumentActions document={document} />
       </Flex>
     ),
   },

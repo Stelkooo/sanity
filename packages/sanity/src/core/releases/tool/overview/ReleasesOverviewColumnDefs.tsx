@@ -1,7 +1,6 @@
 import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {BundleBadge, RelativeTime, UserAvatar} from 'sanity'
 
-import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {type Column} from '../../components/Table/types'
 import {type TableBundle} from './ReleasesOverview'
@@ -37,14 +36,16 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
   {
     id: 'search',
     sorting: false,
+    width: null,
     header: (props) => <TableHeaderSearch {...props} placeholder="Search releases" />,
     cell: ReleaseNameCell,
   },
   {
     id: 'documentCount',
     sorting: false,
+    width: 90,
     header: ({headerProps}) => (
-      <Flex {...headerProps} paddingY={3} sizing="border" style={{width: 90}}>
+      <Flex {...headerProps} paddingY={3} sizing="border">
         <Box padding={2}>
           <Text muted size={1} weight="medium">
             Documents
@@ -53,14 +54,7 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
       </Flex>
     ),
     cell: ({datum: {documentsMetadata}, cellProps}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 90}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         <Text muted size={1}>
           {documentsMetadata.documentCount}
         </Text>
@@ -70,21 +64,14 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
   {
     id: '_createdAt',
     sorting: true,
+    width: 120,
     header: (props) => (
-      <Flex {...props.headerProps} paddingY={3} sizing="border" style={{width: 120}}>
+      <Flex {...props.headerProps} paddingY={3} sizing="border">
         <SortHeaderButton text="Created" {...props} />
       </Flex>
     ),
     cell: ({cellProps, datum: bundle}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        gap={2}
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 120}}
-      >
+      <Flex {...cellProps} align="center" gap={2} paddingX={2} paddingY={3} sizing="border">
         {bundle.authorId && <UserAvatar size={0} user={bundle.authorId} />}
         <Text muted size={1}>
           <RelativeTime time={bundle._createdAt} useTemporalPhrase minimal />
@@ -95,21 +82,14 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
   {
     id: 'documentsMetadata.updatedAt',
     sorting: true,
+    width: 100,
     header: (props) => (
-      <Flex {...props.headerProps} paddingY={3} sizing="border" style={{width: 100}}>
+      <Flex {...props.headerProps} paddingY={3} sizing="border">
         <SortHeaderButton text="Edited" {...props} />
       </Flex>
     ),
     cell: ({datum: {documentsMetadata}, cellProps}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        gap={2}
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 100}}
-      >
+      <Flex {...cellProps} align="center" gap={2} paddingX={2} paddingY={3} sizing="border">
         {documentsMetadata.updatedAt && (
           <Text muted size={1}>
             <RelativeTime time={documentsMetadata.updatedAt} useTemporalPhrase minimal />
@@ -121,53 +101,19 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
   {
     id: 'publishedAt',
     sorting: true,
+    width: 100,
     header: (props) => (
-      <Flex
-        {...props.headerProps}
-        align="center"
-        gap={1}
-        paddingX={1}
-        paddingY={0}
-        sizing="border"
-        style={{width: 100}}
-      >
+      <Flex {...props.headerProps} align="center" gap={1} paddingX={1} paddingY={0} sizing="border">
         <SortHeaderButton text="Published" {...props} />
       </Flex>
     ),
     cell: ({cellProps, datum: bundle}) => (
-      <Flex
-        {...cellProps}
-        align="center"
-        paddingX={2}
-        paddingY={3}
-        sizing="border"
-        style={{width: 100}}
-      >
+      <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         {!!bundle.publishedAt && (
           <Text muted size={1}>
             <RelativeTime time={bundle.publishedAt} />
           </Text>
         )}
-      </Flex>
-    ),
-  },
-  {
-    id: 'actions',
-    sorting: false,
-    header: ({headerProps}) => (
-      <Flex
-        {...headerProps}
-        align="center"
-        gap={1}
-        paddingX={2}
-        paddingY={1}
-        sizing="border"
-        style={{width: 50}}
-      />
-    ),
-    cell: ({cellProps, datum: bundle}) => (
-      <Flex {...cellProps} align="center" flex="none" padding={3}>
-        <BundleMenuButton bundle={bundle} documentCount={bundle.documentsMetadata.documentCount} />
       </Flex>
     ),
   },
