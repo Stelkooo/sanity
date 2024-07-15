@@ -1,18 +1,8 @@
 import {ArrowDownIcon, ArrowUpIcon, SearchIcon} from '@sanity/icons'
 import {Button, type ButtonProps, Card, Flex, Stack, TextInput} from '@sanity/ui'
 
-import {type Column, type InjectedTableProps} from './Table'
 import {useTableContext} from './tableContext'
-
-export interface TableHeaderProps {
-  headers: Omit<Column, 'cell'>[]
-  searchDisabled?: boolean
-}
-
-export type HeaderProps = Omit<TableHeaderProps, 'headers'> & {
-  headerProps: InjectedTableProps
-  header: Pick<Column, 'sorting' | 'id'>
-}
+import {type HeaderProps, type TableHeaderProps} from './types'
 
 export const SortHeaderButton = ({headerProps, ...props}: ButtonProps & HeaderProps) => {
   const {sort, setSearchColumn} = useTableContext()
@@ -31,7 +21,11 @@ export const SortHeaderButton = ({headerProps, ...props}: ButtonProps & HeaderPr
   )
 }
 
-export const TableHeaderSearch = ({headerProps, searchDisabled}: HeaderProps) => {
+export const TableHeaderSearch = ({
+  headerProps,
+  searchDisabled,
+  placeholder,
+}: HeaderProps & {placeholder?: string}) => {
   const {setSearchTerm, searchTerm} = useTableContext()
 
   return (
@@ -40,7 +34,7 @@ export const TableHeaderSearch = ({headerProps, searchDisabled}: HeaderProps) =>
         border={false}
         fontSize={1}
         icon={SearchIcon}
-        placeholder="Search releases"
+        placeholder={placeholder || 'Search'}
         radius={3}
         value={searchTerm || ''}
         disabled={searchDisabled}

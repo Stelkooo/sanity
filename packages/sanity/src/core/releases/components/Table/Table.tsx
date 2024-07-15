@@ -1,49 +1,14 @@
-/* eslint-disable react/display-name */
 import {Card, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
 import {Fragment, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
-import {type RouterContextValue, useRouter} from 'sanity/router'
+import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
-import {type TableContextValue, useTableContext} from './tableContext'
-import {type HeaderProps, TableHeader} from './TableHeader'
+import {useTableContext} from './tableContext'
+import {TableHeader} from './TableHeader'
 import {TableProvider} from './TableProvider'
-
-export interface InjectedTableProps {
-  as?: React.ElementType | keyof JSX.IntrinsicElements
-  id: string
-}
-
-export interface Column<D = any> {
-  header: (props: HeaderProps) => JSX.Element
-  cell: (props: {
-    datum: D
-    cellProps: InjectedTableProps
-    sorting: boolean
-    router: RouterContextValue
-  }) => React.ReactNode
-  id: keyof D | string
-  sorting?: boolean
-}
-
-export interface TableProps<D, AdditionalD> {
-  columnDefs: AdditionalD extends undefined ? Column<D>[] : Column<D & AdditionalD>[]
-  searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
-  Row?: ({
-    datum,
-    children,
-    searchTerm,
-  }: {
-    datum: D
-    children: (rowData: D) => JSX.Element
-    searchTerm: TableContextValue['searchTerm']
-  }) => JSX.Element | null
-  data: D[]
-  emptyState: (() => JSX.Element) | string
-  loading: boolean
-  rowId?: keyof D
-}
+import {type TableProps} from './types'
 
 const RowStack = styled(Stack)({
   '& > *:not(:first-child)': {

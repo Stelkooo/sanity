@@ -2,17 +2,21 @@ import {AddIcon} from '@sanity/icons'
 import {Box, Button, type ButtonMode, Card, Container, Flex, Heading, Stack, Text} from '@sanity/ui'
 import {isBefore} from 'date-fns'
 import {type MouseEventHandler, useCallback, useEffect, useMemo, useState} from 'react'
+import {type BundleDocument} from 'sanity'
 
 import {Button as StudioButton} from '../../../../ui-components'
 import {CreateBundleDialog} from '../../../bundles/components/dialog/CreateBundleDialog'
 import {useBundles} from '../../../store/bundles/useBundles'
-import {type TableBundle} from '../../components/ReleasesTable/ReleasesTable'
 import {Table} from '../../components/Table/Table'
 import {containsBundles} from '../../types/bundle'
-import {useBundlesMetadata} from '../useBundlesMetadata'
-import {columnDefs} from './ReleaseTableColumnDefs'
+import {type BundlesMetadata, useBundlesMetadata} from '../useBundlesMetadata'
+import {releasesOverviewColumnDefs} from './ReleasesOverviewColumnDefs'
 
 type Mode = 'open' | 'archived'
+
+export interface TableBundle extends BundleDocument {
+  documentsMetadata: BundlesMetadata
+}
 
 const EMPTY_BUNDLE_GROUPS = {open: [], archived: []}
 
@@ -165,7 +169,7 @@ export function ReleasesOverview() {
             key={bundleGroupMode}
             loading={loading}
             data={groupedBundles[bundleGroupMode]}
-            columnDefs={columnDefs}
+            columnDefs={releasesOverviewColumnDefs}
             searchFilterPredicate={applySearchTermToBundles}
             emptyState={'No Releases'}
             rowId="_id"

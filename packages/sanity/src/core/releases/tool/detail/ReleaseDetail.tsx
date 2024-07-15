@@ -14,7 +14,7 @@ import {type ReleasesRouterState} from '../../types/router'
 import {useReleaseHistory} from './documentTable/useReleaseHistory'
 import {ReleaseSummary} from './ReleaseSummary'
 
-type Screen = 'overview' | 'review'
+type Screen = 'summary' | 'review'
 
 const useFetchBundleDocuments = (bundleName: string) => {
   const client = useClient({apiVersion: API_VERSION})
@@ -24,7 +24,7 @@ const useFetchBundleDocuments = (bundleName: string) => {
 
 export const ReleaseDetail = () => {
   const router = useRouter()
-  const [activeScreen, setActiveScreen] = useState<Screen>('overview')
+  const [activeScreen, setActiveScreen] = useState<Screen>('summary')
   const {bundleName}: ReleasesRouterState = router.state
   const parsedBundleName = decodeURIComponent(bundleName || '')
   const {data, loading} = useBundles()
@@ -60,10 +60,10 @@ export const ReleaseDetail = () => {
 
             <Flex gap={1}>
               <Button
-                key="overview"
+                key="summary"
                 mode="bleed"
-                onClick={() => setActiveScreen('overview')}
-                selected={activeScreen === 'overview'}
+                onClick={() => setActiveScreen('summary')}
+                selected={activeScreen === 'summary'}
                 text="Summary"
               />
               {/* StudioButton supports tooltip when button is disabled */}
@@ -130,7 +130,7 @@ export const ReleaseDetail = () => {
               <LoadingBlock title="Loading documents" />
             ) : (
               <>
-                {activeScreen === 'overview' && (
+                {activeScreen === 'summary' && (
                   <ReleaseSummary
                     documents={bundleDocuments}
                     release={bundle}

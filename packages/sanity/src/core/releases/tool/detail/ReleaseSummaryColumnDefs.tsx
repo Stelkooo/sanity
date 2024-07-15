@@ -2,8 +2,8 @@ import {AvatarStack, Box, Card, Flex, Text} from '@sanity/ui'
 import {type ForwardRefExoticComponent, type RefAttributes} from 'react'
 import {RelativeTime, SanityDefaultPreview, type SanityDocument, UserAvatar} from 'sanity'
 
-import {type Column} from '../../components/Table/Table'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
+import {type Column} from '../../components/Table/types'
 import {DocumentActions} from './documentTable/DocumentActions'
 import {type useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentWithHistory} from './ReleaseSummary'
@@ -16,7 +16,7 @@ export const getReleaseSummaryColumnDefs = (
 ): Column<DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>>[] => [
   {
     id: 'search',
-    header: TableHeaderSearch,
+    header: (props) => <TableHeaderSearch {...props} placeholder="Search documents" />,
     cell: ({cellProps, datum: document}) => (
       <Box {...cellProps} flex={1} padding={1}>
         <Card as={getLinkComponent(document._id, document._type)} radius={2} data-as="a">

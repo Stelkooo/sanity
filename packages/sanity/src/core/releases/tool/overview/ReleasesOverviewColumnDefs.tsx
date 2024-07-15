@@ -2,9 +2,9 @@ import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {BundleBadge, RelativeTime, UserAvatar} from 'sanity'
 
 import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
-import {type TableBundle} from '../../components/ReleasesTable/ReleasesTable'
-import {type Column} from '../../components/Table/Table'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
+import {type Column} from '../../components/Table/types'
+import {type TableBundle} from './ReleasesOverview'
 
 const ReleaseNameCell: Column<TableBundle>['cell'] = ({cellProps, router, datum: bundle}) => {
   return (
@@ -33,11 +33,11 @@ const ReleaseNameCell: Column<TableBundle>['cell'] = ({cellProps, router, datum:
   )
 }
 
-export const columnDefs: Column<TableBundle>[] = [
+export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
   {
     id: 'search',
     sorting: false,
-    header: TableHeaderSearch,
+    header: (props) => <TableHeaderSearch {...props} placeholder="Search releases" />,
     cell: ReleaseNameCell,
   },
   {
