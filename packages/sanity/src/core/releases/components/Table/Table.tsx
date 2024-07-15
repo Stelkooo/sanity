@@ -1,11 +1,14 @@
+/* eslint-disable react/display-name */
 import {Card, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
-import {Fragment, useMemo, useState} from 'react'
+import {Fragment, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
 import {type RouterContextValue, useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
-import {TableHeader, type TableHeaderProps} from './TableHeader'
+import {type TableContextValue, useTableContext} from './tableContext'
+import {type HeaderProps, TableHeader} from './TableHeader'
+import {TableProvider} from './TableProvider'
 
 export interface InjectedTableProps {
   as?: React.ElementType | keyof JSX.IntrinsicElements
@@ -13,9 +16,7 @@ export interface InjectedTableProps {
 }
 
 export interface Column<D> {
-  header: (
-    props: {headerProps: InjectedTableProps} & Omit<TableHeaderProps<D>, 'headers'>,
-  ) => JSX.Element
+  header: (props: HeaderProps<D>) => JSX.Element
   cell: (
     props: D & {cellProps: InjectedTableProps} & {sorting: boolean; router: RouterContextValue},
   ) => React.ReactNode
@@ -23,10 +24,18 @@ export interface Column<D> {
   sorting?: boolean
 }
 
-interface TableProps<D> {
+export interface TableProps<D> {
   columnDefs: Column<D>[]
   searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
-  Row?: () => any
+  Row?: ({
+    datum,
+    children,
+    searchTerm,
+  }: {
+    datum: D
+    children: (rowData: D) => JSX.Element
+    searchTerm: TableContextValue['searchTerm']
+  }) => JSX.Element | null
   data: D[]
   emptyState: (() => JSX.Element) | string
   loading: boolean
@@ -46,7 +55,7 @@ const RowStack = styled(Stack)({
   },
 })
 
-export const Table = <D,>({
+const TableInner = <D,>({
   columnDefs,
   data,
   loading,
@@ -56,10 +65,8 @@ export const Table = <D,>({
   rowId,
 }: TableProps<D>) => {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState<string | null>(null)
-  const [sort, setSort] = useState<{column: Column<D>['id']; direction: 'asc' | 'desc'} | null>(
-    null,
-  )
+  const {searchTerm, sort} = useTableContext()
+
   const filteredData = useMemo(() => {
     const filteredResult =
       searchTerm && searchFilterPredicate ? searchFilterPredicate(data, searchTerm) : data
@@ -103,7 +110,7 @@ export const Table = <D,>({
       return emptyState()
     }
 
-    const renderRow = (rowIndex) => (datum) => (
+    const renderRow = (rowIndex: number) => (datum: D) => (
       <Card
         key={rowId ? String(datum[rowId]) : rowIndex}
         data-testid="table-row"
@@ -134,7 +141,7 @@ export const Table = <D,>({
         </Row>
       )
     })
-  }, [columnDefs, emptyState, filteredData, router, rowId, searchTerm])
+  }, [Row, columnDefs, emptyState, filteredData, router, rowId, searchTerm])
 
   if (loading) {
     return <LoadingBlock fill data-testid="table-loading" />
@@ -148,13 +155,17 @@ export const Table = <D,>({
           id: column.id,
           sorting: column.sorting,
         }))}
-        sort={sort}
-        setSort={setSort}
-        setSearchTerm={setSearchTerm}
-        searchTerm={searchTerm}
         searchDisabled={!searchTerm && !data.length}
       />
       <RowStack as="tbody">{tableContent}</RowStack>
     </Stack>
+  )
+}
+
+export const Table = (props: TableProps<D>) => {
+  return (
+    <TableProvider>
+      <TableInner {...props} />
+    </TableProvider>
   )
 }

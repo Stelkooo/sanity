@@ -14,13 +14,14 @@ import {UserAvatar} from '../../../components/userAvatar/UserAvatar'
 import {type BundleDocument} from '../../../store/bundles/types'
 import {useAddonDataset} from '../../../studio/addonDataset/useAddonDataset'
 import {Chip} from '../../components/Chip'
-import {Table} from '../../components/Table/Table'
+import {Table, type TableProps} from '../../components/Table/Table'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
 
-const getRow = (release) =>
-  forwardRef(function RowInner({children, searchTerm, datum}) {
+const getRow =
+  (release: BundleDocument): TableProps<SanityDocument>['Row'] =>
+  ({children, searchTerm, datum}) => {
     const {previewValues, isLoading} = useDocumentPreviewValues({document: datum, release})
 
     if (searchTerm) {
@@ -31,7 +32,7 @@ const getRow = (release) =>
     }
 
     return children({...datum, previewValues, isLoading})
-  })
+  }
 
 export function ReleaseOverview(props: {
   documents: SanityDocument[]
@@ -74,7 +75,7 @@ export function ReleaseOverview(props: {
   )
 
   const getLinkComponent = useCallback(
-    (documentId, documentTypeName) =>
+    (documentId: SanityDocument['_id'], documentTypeName: SanityDocument['_type']) =>
       // eslint-disable-next-line @typescript-eslint/no-shadow
       forwardRef(function LinkComponent(linkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         return (
