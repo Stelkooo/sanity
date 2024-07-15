@@ -7,7 +7,7 @@ import {createTestProvider} from '../../../../../test/testUtils/TestProvider'
 import {type BundleDocument} from '../../../store/bundles/types'
 import {useBundles} from '../../../store/bundles/useBundles'
 import {releasesUsEnglishLocaleBundle} from '../../i18n'
-import {ReleasesOverview} from '../ReleasesOverview'
+import {ReleasesOverview} from '../overview/ReleasesOverview'
 import {type BundlesMetadata, useBundlesMetadata} from '../useBundlesMetadata'
 
 jest.mock('../useBundlesMetadata', () => ({

@@ -3,14 +3,14 @@ import {Box, Button, type ButtonMode, Card, Container, Flex, Heading, Stack, Tex
 import {isBefore} from 'date-fns'
 import {type MouseEventHandler, useCallback, useEffect, useMemo, useState} from 'react'
 
-import {Button as StudioButton} from '../../../ui-components'
-import {CreateBundleDialog} from '../../bundles/components/dialog/CreateBundleDialog'
-import {LoadingBlock} from '../../components/loadingBlock/LoadingBlock'
-import {type BundleDocument} from '../../store/bundles/types'
-import {useBundles} from '../../store/bundles/useBundles'
-import {ReleasesTable, type TableBundle} from '../components/ReleasesTable/ReleasesTable'
-import {containsBundles} from '../types/bundle'
-import {useBundlesMetadata} from './useBundlesMetadata'
+import {Button as StudioButton} from '../../../../ui-components'
+import {CreateBundleDialog} from '../../../bundles/components/dialog/CreateBundleDialog'
+import {useBundles} from '../../../store/bundles/useBundles'
+import {type TableBundle} from '../../components/ReleasesTable/ReleasesTable'
+import {Table} from '../../components/Table/Table'
+import {containsBundles} from '../../types/bundle'
+import {useBundlesMetadata} from '../useBundlesMetadata'
+import {columnDefs} from './ReleaseTableColumnDefs'
 
 type Mode = 'open' | 'archived'
 
@@ -130,15 +130,24 @@ export function ReleasesOverview() {
     )
   }
 
-  const applySearchTermToBundles = useCallback(
-    (bundle: BundleDocument) =>
-      !searchTerm || bundle.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()),
-    [searchTerm],
-  )
+  // const applySearchTermToBundles = useCallback(
+  //   (bundle: BundleDocument) =>
+  //     !searchTerm || bundle.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()),
+  //   [searchTerm],
+  // )
 
-  const filteredBundles = useMemo(
-    () => groupedBundles[bundleGroupMode]?.filter(applySearchTermToBundles) || [],
-    [applySearchTermToBundles, bundleGroupMode, groupedBundles],
+  // const filteredBundles = useMemo(
+  //   () => groupedBundles[bundleGroupMode]?.filter(applySearchTermToBundles) || [],
+  //   [applySearchTermToBundles, bundleGroupMode, groupedBundles],
+  // )
+
+  const applySearchTermToBundles = useCallback(
+    (unfilteredData: TableBundle[], tableSearchTerm: string) => {
+      return unfilteredData.filter((bundle) => {
+        return bundle.title.toLocaleLowerCase().includes(tableSearchTerm.toLocaleLowerCase())
+      })
+    },
+    [],
   )
 
   return (
@@ -167,15 +176,15 @@ export function ReleasesOverview() {
             </Flex>
             {loadingOrHasBundles && createReleaseButton}
           </Flex>
-          {loading ? (
-            <LoadingBlock fill data-testid="bundle-table-loader" />
-          ) : (
-            <ReleasesTable
-              bundles={filteredBundles}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-            />
-          )}
+          <Table<TableBundle>
+            key={bundleGroupMode}
+            loading={loading}
+            data={groupedBundles[bundleGroupMode]}
+            columnDefs={columnDefs}
+            searchFilterPredicate={applySearchTermToBundles}
+            emptyState={'No Releases'}
+            rowId="_id"
+          />
         </Stack>
       </Container>
       {renderCreateBundleDialog()}
