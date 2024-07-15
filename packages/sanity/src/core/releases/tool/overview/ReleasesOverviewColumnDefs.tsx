@@ -18,7 +18,7 @@ const ReleaseNameCell: Column<TableBundle>['cell'] = ({cellProps, router, datum:
       >
         <Flex align="center" gap={2}>
           <Box flex="none">
-            <BundleBadge tone={bundle.tone} icon={bundle.icon} />
+            <BundleBadge hue={bundle.hue} icon={bundle.icon} />
           </Box>
           <Stack flex={1} space={2}>
             <Flex align="center" gap={2}>

@@ -112,6 +112,7 @@ export function ReleaseSummary(props: {
     () => getReleaseSummaryColumnDefs(getLinkComponent),
     [getLinkComponent],
   )
+  const Row = useMemo(() => getRow(release), [release])
 
   return (
     <Stack paddingX={4} space={5}>
@@ -181,18 +182,12 @@ export function ReleaseSummary(props: {
         </Flex>
       </Stack>
 
-      <Table<
-        (typeof aggregatedData)[0],
-        {
-          previewValues: ReturnType<typeof useDocumentPreviewValues>['previewValues']
-          isLoading: ReturnType<typeof useDocumentPreviewValues>['isLoading']
-        }
-      >
+      <Table<(typeof aggregatedData)[0], ReturnType<typeof useDocumentPreviewValues>>
         data={aggregatedData}
         loading={false}
         emptyState={'No documents'}
         rowId="_id"
-        Row={getRow(release)}
+        Row={Row}
         columnDefs={releaseSummaryColumnDefs}
       />
     </Stack>
