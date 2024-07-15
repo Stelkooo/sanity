@@ -4,19 +4,19 @@ import {Button, type ButtonProps, Card, Flex, Stack, TextInput} from '@sanity/ui
 import {useTableContext} from './tableContext'
 import {type HeaderProps, type TableHeaderProps} from './types'
 
-export const SortHeaderButton = ({headerProps, ...props}: ButtonProps & HeaderProps) => {
+export const SortHeaderButton = ({header, text}: ButtonProps & HeaderProps) => {
   const {sort, setSearchColumn} = useTableContext()
   const sortIcon = sort?.direction === 'asc' ? ArrowUpIcon : ArrowDownIcon
 
   return (
     <Button
-      iconRight={props.header.sorting && sort?.column === props.header.id ? sortIcon : undefined}
-      onClick={() => setSearchColumn(String(props.header.id))}
+      iconRight={header.sorting && sort?.column === header.id ? sortIcon : undefined}
+      onClick={() => setSearchColumn(String(header.id))}
       mode="bleed"
       padding={2}
       radius={3}
       space={1}
-      text={props.text}
+      text={text}
     />
   )
 }

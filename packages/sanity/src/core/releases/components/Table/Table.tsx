@@ -1,6 +1,6 @@
 import {Card, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
-import {Fragment, useMemo} from 'react'
+import {Fragment, useCallback, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
 import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
@@ -55,6 +55,35 @@ const TableInner = <D, AdditionalD>({
     })
   }, [data, searchFilterPredicate, searchTerm, sort])
 
+  const renderRow = useCallback(
+    (rowIndex: number) =>
+      function TableRow(datum: D | (D & AdditionalD)) {
+        return (
+          <Card
+            key={rowId ? String(datum[rowId]) : rowIndex}
+            data-testid="table-row"
+            as="tr"
+            border
+            radius={3}
+            display="flex"
+            margin={-1}
+          >
+            {columnDefs.map(({cell: Cell, id, sorting = false}) => (
+              <Fragment key={String(id)}>
+                <Cell
+                  datum={datum as D & AdditionalD}
+                  cellProps={{as: 'td', id: String(id)}}
+                  router={router}
+                  sorting={sorting}
+                />
+              </Fragment>
+            ))}
+          </Card>
+        )
+      },
+    [columnDefs, router, rowId],
+  )
+
   const tableContent = useMemo(() => {
     if (filteredData.length === 0) {
       if (typeof emptyState === 'string') {
@@ -78,31 +107,6 @@ const TableInner = <D, AdditionalD>({
       return emptyState()
     }
 
-    const renderRow = (rowIndex: number) => (datum: D | (D & AdditionalD)) => {
-      return (
-        <Card
-          key={rowId ? String(datum[rowId]) : rowIndex}
-          data-testid="table-row"
-          as="tr"
-          border
-          radius={3}
-          display="flex"
-          margin={-1}
-        >
-          {columnDefs.map(({cell: Cell, id, sorting = false}) => (
-            <Fragment key={String(id)}>
-              <Cell
-                datum={datum as D & AdditionalD}
-                cellProps={{as: 'td', id: String(id)}}
-                router={router}
-                sorting={sorting}
-              />
-            </Fragment>
-          ))}
-        </Card>
-      )
-    }
-
     return filteredData.map((datum, rowIndex) => {
       if (!Row) return renderRow(rowIndex)(datum)
       return (
@@ -111,7 +115,7 @@ const TableInner = <D, AdditionalD>({
         </Row>
       )
     })
-  }, [Row, columnDefs, emptyState, filteredData, router, rowId, searchTerm])
+  }, [Row, emptyState, filteredData, renderRow, rowId, searchTerm])
 
   if (loading) {
     return <LoadingBlock fill data-testid="table-loading" />
@@ -132,10 +136,10 @@ const TableInner = <D, AdditionalD>({
   )
 }
 
-export const Table = <D, AD = undefined>(props: TableProps<D, AD>) => {
+export const Table = <D, AdditionalD = undefined>(props: TableProps<D, AdditionalD>) => {
   return (
     <TableProvider>
-      <TableInner<D, AD> {...props} />
+      <TableInner<D, AdditionalD> {...props} />
     </TableProvider>
   )
 }
