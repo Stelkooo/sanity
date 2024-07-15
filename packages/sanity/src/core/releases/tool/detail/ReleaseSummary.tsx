@@ -187,7 +187,7 @@ export function ReleaseSummary(props: {
         </Flex>
       </Stack>
 
-      <Table<(typeof aggregatedData)[0], ReturnType<typeof useDocumentPreviewValues>>
+      <Table<DocumentWithHistory, ReturnType<typeof useDocumentPreviewValues>>
         data={aggregatedData}
         loading={false}
         emptyState={'No documents'}
