@@ -113,6 +113,14 @@ export interface DraftsModelDocument<T extends SanityDocumentLike = SanityDocume
 }
 
 /**
+ * - 'connect' will happen when the store is connected to the invalidation channel, both initially and after a reconnect after a connection loss
+ * - 'mutation' will happen when a document has been mutated and the store needs to refetch a document
+ */
+export type InvalidationChannelEvent =
+  | {type: 'connected'}
+  | {type: 'mutation'; documentId: string; visibility: string}
+
+/**
  * @hidden
  * @beta */
 export interface PreparedSnapshot {
