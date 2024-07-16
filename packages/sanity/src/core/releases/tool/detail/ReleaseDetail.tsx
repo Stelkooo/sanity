@@ -1,8 +1,8 @@
 import {ArrowLeftIcon, PublishIcon} from '@sanity/icons'
 import {Box, Card, Container, Flex, Heading, Stack, Text} from '@sanity/ui'
-import {useMemo, useState} from 'react'
+import {useCallback, useMemo} from 'react'
 import {LoadingBlock, useClient} from 'sanity'
-import {useRouter} from 'sanity/router'
+import {type RouterContextValue, useRouter} from 'sanity/router'
 
 import {Button} from '../../../../ui-components'
 import {useListener} from '../../../hooks/useListener'
@@ -12,9 +12,11 @@ import {API_VERSION} from '../../../tasks/constants'
 import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
 import {type ReleasesRouterState} from '../../types/router'
 import {useReleaseHistory} from './documentTable/useReleaseHistory'
+import {ReleaseReview} from './ReleaseReview'
 import {ReleaseSummary} from './ReleaseSummary'
 
-type Screen = 'summary' | 'review'
+const SUPPORTED_SCREENS = ['summary', 'review'] as const
+type Screen = (typeof SUPPORTED_SCREENS)[number]
 
 const useFetchBundleDocuments = (bundleName: string) => {
   const client = useClient({apiVersion: API_VERSION})
@@ -22,9 +24,22 @@ const useFetchBundleDocuments = (bundleName: string) => {
   return useListener<BundleDocument>({query, client})
 }
 
+const getActiveScreen = (router: RouterContextValue): Screen => {
+  const activeScreen = Object.fromEntries(router.state._searchParams || []).screen as Screen
+  if (
+    typeof activeScreen !== 'string' ||
+    !activeScreen ||
+    !SUPPORTED_SCREENS.includes(activeScreen)
+  ) {
+    return 'summary'
+  }
+  return activeScreen
+}
 export const ReleaseDetail = () => {
   const router = useRouter()
-  const [activeScreen, setActiveScreen] = useState<Screen>('summary')
+
+  const activeScreen = getActiveScreen(router)
+
   const {bundleName}: ReleasesRouterState = router.state
   const parsedBundleName = decodeURIComponent(bundleName || '')
   const {data, loading} = useBundles()
@@ -36,6 +51,20 @@ export const ReleaseDetail = () => {
   const bundleHasDocuments = !!bundleDocuments.length
   const showPublishButton = loading || !bundle?.publishedAt
   const isPublishButtonDisabled = loading || !bundle || !bundleHasDocuments
+
+  const navigateToReview = useCallback(() => {
+    router.navigate({
+      ...router.state,
+      _searchParams: [['screen', 'review']],
+    })
+  }, [router])
+
+  const navigateToSummary = useCallback(() => {
+    router.navigate({
+      ...router.state,
+      _searchParams: [],
+    })
+  }, [router])
 
   const header = useMemo(
     () => (
@@ -71,7 +100,7 @@ export const ReleaseDetail = () => {
               <Button
                 key="summary"
                 mode="bleed"
-                onClick={() => setActiveScreen('summary')}
+                onClick={navigateToSummary}
                 selected={activeScreen === 'summary'}
                 text="Summary"
               />
@@ -85,7 +114,7 @@ export const ReleaseDetail = () => {
                 key="review"
                 disabled={!bundleHasDocuments}
                 mode="bleed"
-                onClick={() => setActiveScreen('review')}
+                onClick={navigateToReview}
                 selected={activeScreen === 'review'}
                 text="Review changes"
               />
@@ -107,6 +136,8 @@ export const ReleaseDetail = () => {
       bundleDocuments.length,
       bundleHasDocuments,
       isPublishButtonDisabled,
+      navigateToReview,
+      navigateToSummary,
       router,
       showPublishButton,
     ],
@@ -149,7 +180,13 @@ export const ReleaseDetail = () => {
                 )}
               </>
             )}
-            {/* {activeScreen === 'review' && <ReleaseReview documents={documents} release={release} />} */}
+            {activeScreen === 'review' && (
+              <ReleaseReview
+                documents={bundleDocuments}
+                release={bundle}
+                documentsHistory={history.documentsHistory}
+              />
+            )}
           </Box>
         </Container>
       </Card>

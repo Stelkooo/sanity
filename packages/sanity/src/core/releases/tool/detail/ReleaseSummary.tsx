@@ -1,9 +1,7 @@
 import {DocumentsIcon} from '@sanity/icons'
 import {type SanityDocument} from '@sanity/types'
-import {AvatarStack, Card, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
-import {type ForwardedRef, forwardRef, useCallback, useMemo, useState} from 'react'
-import {getPublishedId} from 'sanity'
-import {IntentLink} from 'sanity/router'
+import {AvatarStack, Box, Flex, Heading, Stack, Text, useToast} from '@sanity/ui'
+import {useCallback, useMemo, useState} from 'react'
 
 import {
   BundleIconEditorPicker,
@@ -18,7 +16,7 @@ import {Table, type TableProps} from '../../components/Table/Table'
 import {DocumentActions} from './documentTable/DocumentActions'
 import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
-import {getReleaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
+import {releaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
 
 export type DocumentWithHistory = SanityDocument & {history: DocumentHistory | undefined}
 export type BundleDocumentRow = DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>
@@ -80,26 +78,6 @@ export function ReleaseSummary(props: {
     [client, release._id, toast],
   )
 
-  const getLinkComponent = useCallback(
-    (documentId: SanityDocument['_id'], documentTypeName: SanityDocument['_type']) =>
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      forwardRef(function LinkComponent(linkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-        return (
-          <IntentLink
-            {...linkProps}
-            intent="edit"
-            params={{
-              id: getPublishedId(documentId, true),
-              type: documentTypeName,
-            }}
-            searchParams={[['perspective', `bundle.${release.name}`]]}
-            ref={ref}
-          />
-        )
-      }),
-    [release.name],
-  )
-
   const aggregatedData = useMemo(
     () =>
       documents.map((document) => ({
@@ -109,10 +87,6 @@ export function ReleaseSummary(props: {
     [documents, documentsHistory],
   )
 
-  const releaseSummaryColumnDefs = useMemo(
-    () => getReleaseSummaryColumnDefs(getLinkComponent),
-    [getLinkComponent],
-  )
   const Row = useMemo(() => getRow(release), [release])
 
   const renderRowActions: ({datum}: {datum: BundleDocumentRow}) => JSX.Element = useCallback(
@@ -177,15 +151,13 @@ export function ReleaseSummary(props: {
             )}
 
             {/* Contributors */}
-            <div>
-              <Card as="button" padding={1} radius="full">
-                {collaborators?.length && (
-                  <AvatarStack size={0} style={{margin: -1}}>
-                    {collaborators?.map((userId) => <UserAvatar key={userId} user={userId} />)}
-                  </AvatarStack>
-                )}
-              </Card>
-            </div>
+            <Box padding={1}>
+              {collaborators?.length && (
+                <AvatarStack size={0} style={{margin: -1}}>
+                  {collaborators?.map((userId) => <UserAvatar key={userId} user={userId} />)}
+                </AvatarStack>
+              )}
+            </Box>
           </Flex>
         </Flex>
       </Stack>

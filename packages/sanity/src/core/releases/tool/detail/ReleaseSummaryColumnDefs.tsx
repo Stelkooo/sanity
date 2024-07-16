@@ -1,27 +1,25 @@
-import {AvatarStack, Box, Card, Flex, Text} from '@sanity/ui'
-import {type ForwardRefExoticComponent, type RefAttributes} from 'react'
-import {RelativeTime, SanityDefaultPreview, type SanityDocument, UserAvatar} from 'sanity'
+import {AvatarStack, Box, Flex, Text} from '@sanity/ui'
+import {RelativeTime, UserAvatar} from 'sanity'
 
+import {ReleaseDocumentPreview} from '../../components/ReleaseDocumentPreview'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {type Column} from '../../components/Table/types'
-import {type useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
-import {type DocumentWithHistory} from './ReleaseSummary'
+import {type BundleDocumentRow} from './ReleaseSummary'
 
-export const getReleaseSummaryColumnDefs = (
-  getLinkComponent: (
-    documentId: SanityDocument['_id'],
-    documentTypeName: SanityDocument['_type'],
-  ) => ForwardRefExoticComponent<RefAttributes<HTMLAnchorElement>>,
-): Column<DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>>[] => [
+export const releaseSummaryColumnDefs: Column<BundleDocumentRow>[] = [
   {
     id: 'search',
     width: null,
     header: (props) => <TableHeaderSearch {...props} placeholder="Search documents" />,
     cell: ({cellProps, datum: document}) => (
       <Box {...cellProps} flex={1} padding={1}>
-        <Card as={getLinkComponent(document._id, document._type)} radius={2} data-as="a">
-          <SanityDefaultPreview {...document.previewValues} isPlaceholder={document.isLoading} />
-        </Card>
+        <ReleaseDocumentPreview
+          documentId={document._id}
+          documentTypeName={document._type}
+          releaseName="releaseName"
+          previewValues={document.previewValues}
+          isLoading={!!document.isLoading}
+        />
       </Box>
     ),
   },
