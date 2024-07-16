@@ -1,11 +1,11 @@
 import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
 import {Fragment, useMemo} from 'react'
-import {LoadingBlock} from 'sanity'
 import {type TableContextValue, useTableContext} from 'sanity/_singletons'
 import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
+import {LoadingBlock} from '../../../components'
 import {TableHeader} from './TableHeader'
 import {TableProvider} from './TableProvider'
 import {type Column} from './types'

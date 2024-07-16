@@ -1,155 +1,218 @@
-import {describe, expect, it, jest} from '@jest/globals'
+import {beforeEach, describe, expect, it, jest} from '@jest/globals'
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react'
 import {useRouter} from 'sanity/router'
 
-import {createTestProvider} from '../../../../../../test/testUtils/TestProvider'
-import {useBundleOperations} from '../../../../store/bundles/useBundleOperations'
-import {ReleasesTable, type TableBundle} from '../../../components/ReleasesTable/ReleasesTable'
+import {queryByDataUi} from '../../../../../../test/setup/customQueries'
+import {createWrapper} from '../../../../bundles/util/tests/createWrapper'
+import {useBundles} from '../../../../store'
+import {type BundleDocument} from '../../../../store/bundles/types'
+import {releasesUsEnglishLocaleBundle} from '../../../i18n'
+import {type BundlesMetadata, useBundlesMetadata} from '../../useBundlesMetadata'
+import {ReleasesOverview} from '../ReleasesOverview'
+
+jest.mock('../../useBundlesMetadata', () => ({
+  useBundlesMetadata: jest.fn(),
+}))
+
+jest.mock('../../../../store', () => ({
+  ...(jest.requireActual('../../../../store') || {}),
+  useBundles: jest.fn(),
+}))
+
+jest.mock('sanity', () => ({
+  useCurrentUser: jest.fn().mockReturnValue({user: {id: 'user-id'}}),
+}))
 
 jest.mock('sanity/router', () => ({
   ...(jest.requireActual('sanity/router') || {}),
-  useRouter: jest.fn().mockReturnValue({state: {bundleName: '123'}, navigate: jest.fn()}),
+  useRouter: jest.fn().mockReturnValue({state: {}, navigate: jest.fn()}),
 }))
 
-jest.mock('../../../../store/bundles/useBundleOperations', () => ({
-  useBundleOperations: jest.fn().mockReturnValue({deleteBundle: jest.fn()}),
-}))
+const mockUseBundles = useBundles as jest.Mock<typeof useBundles>
+const mockUseBundlesMetadata = useBundlesMetadata as jest.Mock<typeof useBundlesMetadata>
 
-const mockSetSearchTerm = jest.fn()
+describe('ReleasesOverview', () => {
+  describe('when loading bundles', () => {
+    beforeEach(async () => {
+      mockUseBundles.mockReturnValue({
+        data: null,
+        loading: true,
+        dispatch: jest.fn(),
+      })
+      mockUseBundlesMetadata.mockReturnValue({
+        loading: true,
+        fetching: true,
+        error: null,
+        data: null,
+      })
 
-const renderReleasesTable = async (bundles: TableBundle[]) => {
-  const wrapper = await createTestProvider()
-  return render(<ReleasesTable bundles={bundles} setSearchTerm={mockSetSearchTerm} />, {wrapper})
-}
+      const wrapper = await createWrapper({
+        resources: [releasesUsEnglishLocaleBundle],
+      })
 
-describe('ReleasesTable', () => {
-  it('should render the table headers', async () => {
-    await renderReleasesTable([])
+      return render(<ReleasesOverview />, {wrapper})
+    })
 
-    screen.getByPlaceholderText('Search releases')
-    screen.getByText('Published')
-    screen.getByText('Edited')
-    screen.getByText('Created')
-  })
+    it('does not show bundles table but shows loader', () => {
+      expect(screen.queryByRole('table')).toBeNull()
+      queryByDataUi(document.body, 'Spinner')
+    })
 
-  it('should display "No Releases" when there are no bundles', async () => {
-    await renderReleasesTable([])
-    screen.getByText('No Releases')
-  })
+    it('does not allow for switching between history modes', () => {
+      expect(screen.getByText('Open').closest('button')).toBeDisabled()
+      expect(screen.getByText('Archived').closest('button')).toBeDisabled()
+    })
 
-  it('should render a list of bundles', async () => {
-    const bundles = [
-      {
-        title: 'Bundle 1',
-        name: 'bundle-1',
-        _createdAt: new Date().toISOString(),
-        documentsMetadata: {
-          documentCount: 1,
-        },
-      },
-      {
-        title: 'Bundle 2',
-        name: 'bundle-2',
-        _createdAt: new Date().toISOString(),
-        documentsMetadata: {
-          documentCount: 0,
-        },
-      },
-      {
-        title: 'Bundle 3',
-        name: 'bundle-3',
-        _createdAt: new Date().toISOString(),
-        documentsMetadata: {
-          // 24 hours ago
-          updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          documentCount: 3,
-        },
-      },
-    ] as TableBundle[]
+    it('does show the page heading', () => {
+      screen.getByText('Releases')
+    })
 
-    await renderReleasesTable(bundles)
-
-    const bundleRows = screen.getAllByTestId('bundle-row')
-    expect(bundleRows).toHaveLength(bundles.length)
-    bundles.forEach((bundle, index) => {
-      within(bundleRows[index]).getByText(bundle.title)
-      within(bundleRows[index]).getByText(bundle.documentsMetadata.documentCount.toString())
-      within(bundleRows[index]).getByText('just now')
-      if (bundle.documentsMetadata.updatedAt) {
-        within(bundleRows[index]).getByText('yesterday')
-      }
+    it('allows for creating a new bundle', () => {
+      expect(screen.getByText('Create release')).not.toBeDisabled()
     })
   })
 
-  it('should disable search when no bundles in table', async () => {
-    await renderReleasesTable([])
+  describe('when no bundles are available', () => {
+    beforeEach(async () => {
+      mockUseBundles.mockReturnValue({
+        data: [],
+        loading: false,
+        dispatch: jest.fn(),
+      })
+      mockUseBundlesMetadata.mockReturnValue({
+        loading: false,
+        fetching: false,
+        error: null,
+        data: null,
+      })
+      const wrapper = await createWrapper()
 
-    expect(screen.getByPlaceholderText('Search releases')).toBeDisabled()
+      return render(<ReleasesOverview />, {wrapper})
+    })
+
+    it('shows a message that no bundles are available', () => {
+      screen.getByText('No Releases')
+    })
+
+    it('does not allow for bundle search', () => {
+      expect(screen.getByPlaceholderText('Search releases')).toBeDisabled()
+    })
+
+    it('does not show bundle history mode switch', () => {
+      expect(screen.queryByText('Open')).toBeNull()
+      expect(screen.queryByText('Archived')).toBeNull()
+    })
+
+    it('shows the page heading', () => {
+      screen.getByText('Releases')
+    })
+
+    it('shows create releases button', () => {
+      expect(screen.getByText('Create release')).not.toBeDisabled()
+    })
   })
 
-  it('should enable and trigger a search when there are bundles in the table', async () => {
-    await renderReleasesTable([
+  describe('when bundles are loaded', () => {
+    const bundles = [
+      {title: 'Bundle 1', _id: '1', name: 'bundle-1', _createdAt: new Date().toISOString()},
+      {title: 'Bundle 2', _id: '2', name: 'bundle-2', _createdAt: new Date().toISOString()},
       {
-        title: 'Bundle 1',
-        name: 'bundle-1',
+        title: 'Bundle 3',
+        _id: '3',
+        publishedAt: new Date().toISOString(),
+        name: 'bundle-3',
         _createdAt: new Date().toISOString(),
-        documentsMetadata: {
-          documentCount: 0,
-        },
       },
-    ] as TableBundle[])
+      {
+        title: 'Bundle 4',
+        _id: '4',
+        archivedAt: new Date().toISOString(),
+        name: 'bundle-4',
+        _createdAt: new Date().toISOString(),
+      },
+    ] as BundleDocument[]
 
-    const searchInput = screen.getByPlaceholderText('Search releases')
-    fireEvent.change(searchInput, {target: {value: 'Bundle 1'}})
+    beforeEach(async () => {
+      mockUseBundles.mockReturnValue({
+        data: bundles,
+        loading: false,
+        dispatch: jest.fn(),
+      })
+      mockUseBundlesMetadata.mockReturnValue({
+        loading: false,
+        fetching: false,
+        error: null,
+        data: Object.fromEntries(
+          bundles.map((bundle) => [
+            bundle.name,
+            {
+              documentCount: 1,
+              updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+            } as BundlesMetadata,
+          ]),
+        ),
+      })
+      const wrapper = await createWrapper()
 
-    expect(mockSetSearchTerm).toHaveBeenCalledWith('Bundle 1')
-  })
+      return render(<ReleasesOverview />, {wrapper})
+    })
 
-  describe('A release row', () => {
-    it('should navigate to the release detail when clicked', async () => {
-      const bundles = [
-        {
-          _id: '123',
-          title: 'Bundle 1',
-          name: 'bundle-1',
-          _createdAt: new Date().toISOString(),
-          documentsMetadata: {
-            documentCount: 1,
-          },
-        },
-      ] as TableBundle[]
-      await renderReleasesTable(bundles)
+    it('shows each open bundle', () => {
+      const bundleRows = screen.getAllByTestId('table-row')
+      // 2 open releases
+      expect(bundleRows).toHaveLength(2)
 
-      const bundleRow = screen.getAllByTestId('bundle-row')[0]
+      const openBundles = [...bundles].slice(0, 2)
+      openBundles.forEach((bundle, index) => {
+        // bundle title
+        within(bundleRows[index]).getByText(bundle.title)
+        // document count
+        within(bundleRows[index]).getByText('1')
+        // updated at
+        within(bundleRows[index]).getByText('yesterday')
+        // created at
+        within(bundleRows[index]).getByText('just now')
+      })
+    })
+
+    it('allows for switching between history modes', () => {
+      expect(screen.getByText('Open').closest('button')).not.toBeDisabled()
+      expect(screen.getByText('Archived').closest('button')).not.toBeDisabled()
+    })
+
+    it('shows published bundles', async () => {
+      fireEvent.click(screen.getByText('Archived'))
+
+      await waitFor(() => {
+        screen.getByText('Bundle 3')
+        screen.getByText('Bundle 4')
+        expect(screen.queryByText('Bundle 1')).toBeNull()
+      })
+    })
+
+    it('allows for searching bundles', () => {
+      expect(screen.getByPlaceholderText('Search releases')).not.toBeDisabled()
+      fireEvent.change(screen.getByPlaceholderText('Search releases'), {
+        target: {value: 'Bundle 1'},
+      })
+
+      screen.getByText('Bundle 1')
+      expect(screen.queryByText('Bundle 2')).toBeNull()
+
+      // search for non-existent bundle title
+      fireEvent.change(screen.getByPlaceholderText('Search releases'), {
+        target: {value: 'Bananas'},
+      })
+
+      screen.getByText('No Releases')
+      expect(screen.queryByText('Bundle 1')).toBeNull()
+    })
+
+    it('should navigate to release when row clicked', async () => {
+      const bundleRow = screen.getAllByTestId('table-row')[0]
       fireEvent.click(within(bundleRow).getByText('Bundle 1'))
 
       expect(useRouter().navigate).toHaveBeenCalledWith({bundleName: 'bundle-1'})
-    })
-
-    it('should delete bundle when menu button is clicked', async () => {
-      const bundles = [
-        {
-          _id: '123',
-          title: 'Bundle 1',
-          name: 'bundle-1',
-          _createdAt: new Date().toISOString(),
-          documentsMetadata: {
-            documentCount: 1,
-          },
-        },
-      ] as TableBundle[]
-      await renderReleasesTable(bundles)
-
-      const bundleRow = screen.getAllByTestId('bundle-row')[0]
-      fireEvent.click(within(bundleRow).getByLabelText('Release menu'))
-
-      fireEvent.click(screen.getByText('Delete'))
-      fireEvent.click(screen.getByText('Confirm'))
-
-      await waitFor(() => {
-        expect(useBundleOperations().deleteBundle).toHaveBeenCalledWith(bundles[0])
-        expect(useRouter().navigate).toHaveBeenCalledWith({bundleName: undefined})
-      })
     })
   })
 })

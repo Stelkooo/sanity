@@ -1,6 +1,7 @@
 import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
-import {BundleBadge, RelativeTime, UserAvatar} from 'sanity'
 
+import {BundleBadge} from '../../../bundles'
+import {RelativeTime, UserAvatar} from '../../../components'
 import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
 import {type Column} from '../../components/Table/types'
 import {type TableBundle} from './ReleasesOverview'
@@ -111,7 +112,7 @@ export const releasesOverviewColumnDefs: Column<TableBundle>[] = [
       <Flex {...cellProps} align="center" paddingX={2} paddingY={3} sizing="border">
         {!!bundle.publishedAt && (
           <Text muted size={1}>
-            <RelativeTime time={bundle.publishedAt} />
+            <RelativeTime time={bundle.publishedAt} useTemporalPhrase minimal />
           </Text>
         )}
       </Flex>
