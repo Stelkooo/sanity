@@ -2,10 +2,10 @@ import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
 import {Fragment, useCallback, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
+import {type TableContextValue, useTableContext} from 'sanity/_singletons'
 import {useRouter} from 'sanity/router'
 import {styled} from 'styled-components'
 
-import {type TableContextValue, useTableContext} from './tableContext'
 import {TableHeader} from './TableHeader'
 import {TableProvider} from './TableProvider'
 import {type Column} from './types'
@@ -24,7 +24,7 @@ export interface TableProps<D, AdditionalD> {
   }) => JSX.Element | null
   data: D[]
   emptyState: (() => JSX.Element) | string
-  loading: boolean
+  loading?: boolean
   rowId?: keyof D
   rowActions?: ({
     datum,
@@ -49,12 +49,12 @@ const RowStack = styled(Stack)({
 const TableInner = <D, AdditionalD>({
   columnDefs,
   data,
-  loading,
   emptyState,
   searchFilterPredicate,
   Row,
   rowId,
   rowActions,
+  loading = false,
 }: TableProps<D, AdditionalD>) => {
   const router = useRouter()
   const {searchTerm, sort} = useTableContext()
@@ -65,16 +65,14 @@ const TableInner = <D, AdditionalD>({
     if (!sort) return filteredResult
 
     return [...filteredResult].sort((a, b) => {
-      const aDateString = get(a, sort.column)
-      const bDateString = get(b, sort.column)
+      const parseDate = (dateString: unknown) =>
+        typeof dateString === 'string' ? Date.parse(dateString) : 0
 
-      const aDate = typeof aDateString === 'string' ? Date.parse(aDateString) : 0
-      const bDate = typeof bDateString === 'string' ? Date.parse(bDateString) : 0
+      const aDate = parseDate(get(a, sort.column))
+      const bDate = parseDate(get(b, sort.column))
+
       const order = aDate - bDate
-      if (sort.direction === 'asc') {
-        return order
-      }
-
+      if (sort.direction === 'asc') return order
       return -order
     })
   }, [data, searchFilterPredicate, searchTerm, sort])

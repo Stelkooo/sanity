@@ -4,6 +4,7 @@ import {isBefore} from 'date-fns'
 import {type MouseEventHandler, useCallback, useEffect, useMemo, useState} from 'react'
 import {type BundleDocument, useBundles} from 'sanity'
 
+import {Button as StudioButton} from '../../../../ui-components'
 import {CreateBundleDialog} from '../../../bundles/components/dialog/CreateBundleDialog'
 import {BundleMenuButton} from '../../components/BundleMenuButton/BundleMenuButton'
 import {Table} from '../../components/Table/Table'
@@ -177,7 +178,7 @@ export function ReleasesOverview() {
             data={groupedBundles[bundleGroupMode]}
             columnDefs={releasesOverviewColumnDefs}
             searchFilterPredicate={applySearchTermToBundles}
-            emptyState={'No Releases'}
+            emptyState="No Releases"
             rowId="_id"
             rowActions={renderRowActions}
           />

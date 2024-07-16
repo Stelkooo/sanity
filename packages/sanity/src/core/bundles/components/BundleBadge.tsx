@@ -10,13 +10,15 @@ import {type BundleDocument} from '../../store/bundles/types'
  * @internal
  */
 export function BundleBadge(
-  props: Partial<BundleDocument> & {
-    hue: ColorHueKey
-    icon: IconSymbol
-    openButton?: boolean
-    padding?: number
-    title?: string
-  },
+  props: Partial<
+    BundleDocument & {
+      icon: IconSymbol
+      hue: ColorHueKey
+      openButton: boolean
+      padding: number
+      title: string
+    }
+  >,
 ): JSX.Element {
   const {hue = 'gray', icon, openButton, padding = 3, title} = props
   const {color} = useTheme_v2()

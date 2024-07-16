@@ -189,8 +189,7 @@ export function ReleaseSummary(props: {
 
       <Table<DocumentWithHistory, ReturnType<typeof useDocumentPreviewValues>>
         data={aggregatedData}
-        loading={false}
-        emptyState={'No documents'}
+        emptyState="No documents"
         rowId="_id"
         Row={Row}
         columnDefs={releaseSummaryColumnDefs}

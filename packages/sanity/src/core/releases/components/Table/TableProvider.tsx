@@ -1,21 +1,21 @@
 import {useState} from 'react'
+import {TableContext} from 'sanity/_singletons'
 
-import {type Column} from './Table'
-import {TableContext} from './tableContext'
-
-export const TableProvider = <D,>({children}) => {
+/**
+ *
+ * @internal
+ */
+export const TableProvider = ({children}: {children: React.ReactNode}): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState<string | null>(null)
-  const [sort, setSort] = useState<{column: Column<D>['id']; direction: 'asc' | 'desc'} | null>(
-    null,
-  )
+  const [sort, setSort] = useState<{column: string; direction: 'asc' | 'desc'} | null>(null)
 
-  const setSearchColumn = (newColumn: keyof D) => {
+  const setSearchColumn = (newColumn: string) => {
     setSort((s) => {
       if (s?.column === newColumn) {
         return {...s, direction: s.direction === 'asc' ? 'desc' : 'asc'}
       }
 
-      return {column: newColumn, direction: 'desc'}
+      return {column: String(newColumn), direction: 'desc'}
     })
   }
 

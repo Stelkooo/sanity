@@ -1,9 +1,13 @@
 import {ArrowDownIcon, ArrowUpIcon, SearchIcon} from '@sanity/icons'
 import {Button, type ButtonProps, Card, Flex, Stack, TextInput} from '@sanity/ui'
+import {useTableContext} from 'sanity/_singletons'
 
-import {useTableContext} from './tableContext'
 import {type HeaderProps, type TableHeaderProps} from './types'
 
+/**
+ *
+ * @internal
+ */
 export const SortHeaderButton = ({header, text}: ButtonProps & HeaderProps) => {
   const {sort, setSearchColumn} = useTableContext()
   const sortIcon = sort?.direction === 'asc' ? ArrowUpIcon : ArrowDownIcon
@@ -21,6 +25,10 @@ export const SortHeaderButton = ({header, text}: ButtonProps & HeaderProps) => {
   )
 }
 
+/**
+ *
+ * @internal
+ */
 export const TableHeaderSearch = ({
   headerProps,
   searchDisabled,
@@ -46,6 +54,10 @@ export const TableHeaderSearch = ({
   )
 }
 
+/**
+ *
+ * @internal
+ */
 export const TableHeader = ({headers, searchDisabled}: TableHeaderProps) => {
   return (
     <Card as="thead" radius={3}>

@@ -7,16 +7,16 @@ export interface TableContextValue {
   setSearchColumn: (column: string) => void
 }
 
-const DEFAULT_TABLE_CONTEXT = {
+const DEFAULT_TABLE_CONTEXT: TableContextValue = {
   searchTerm: null,
-  setSearchTerm: () => {},
+  setSearchTerm: () => null,
   sort: null,
-  setSearchColumn: () => {},
+  setSearchColumn: () => null,
 }
 
 export const TableContext = createContext<TableContextValue | null>(null)
 
-export const useTableContext = () => {
+export const useTableContext = (): TableContextValue => {
   const context = useContext(TableContext)
   if (!context) {
     throw new Error('useTableContext must be used within a TableProvider')
