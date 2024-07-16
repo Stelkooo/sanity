@@ -1638,6 +1638,9 @@ importers:
       resolve-from:
         specifier: ^5.0.0
         version: 5.0.0
+      resolve.exports:
+        specifier: ^2.0.2
+        version: 2.0.2
       rimraf:
         specifier: ^3.0.2
         version: 3.0.2
@@ -6747,8 +6750,8 @@ packages:
       - debug
     dev: false
 
-  /@sanity/types@3.50.0:
-    resolution: {integrity: sha512-umRzKcI8tdQNC2RiK7tGfmhB5WKsMp4xTh/0B4g3aHTnyF6XzBOm+jhAsCT8qu1CTC+DS2e3WA8o++6ev7/uBA==}
+  /@sanity/types@3.51.0:
+    resolution: {integrity: sha512-eqiJZ+ko+LsInoEWIdG4HDwc9kszfmbld7nC2ooJySJNFgyeTscwXnmTqS2EDNDkzML+sBszolg3pZBpgdB50g==}
     dependencies:
       '@sanity/client': 6.21.0(debug@4.3.5)
       '@types/react': 18.3.3
@@ -6829,12 +6832,12 @@ packages:
       - debug
     dev: false
 
-  /@sanity/util@3.50.0:
-    resolution: {integrity: sha512-GkvswxZuKF3Mxkn4kgvY8NUpci6zgnSJTeqkxcJjxSzZEUjRj55Pc8uBwYgktFBaw6yYblyU65OQlo1jxsx5AQ==}
+  /@sanity/util@3.51.0:
+    resolution: {integrity: sha512-Vhe1tcPMAtgMNjjAr0nOmrFvPE0dxjBl3KbIs+x+M2wzAeCKvb4iGsh7GGrud8Yf5IqydDIJ95N2wE19yBc+GQ==}
     engines: {node: '>=18'}
     dependencies:
       '@sanity/client': 6.21.0(debug@4.3.5)
-      '@sanity/types': 3.50.0
+      '@sanity/types': 3.51.0
       get-random-values-esm: 1.0.2
       moment: 2.30.1
       rxjs: 7.8.1
@@ -16915,7 +16918,6 @@ packages:
   /resolve.exports@2.0.2:
     resolution: {integrity: sha512-X2UW6Nw3n/aMgDVy+0rSqgHlv39WZAlZrXCdnbyEiKm17DSqHX4MmQMaST3FbeWR5FTuRcUwYAziZajji0Y7mg==}
     engines: {node: '>=10'}
-    dev: true
 
   /resolve@1.22.8:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
@@ -17175,7 +17177,7 @@ packages:
       '@sanity/image-url': 1.0.2
       '@sanity/incompatible-plugin': 1.0.4(react-dom@18.3.1)(react@18.3.1)
       '@sanity/ui': 2.7.0(react-dom@18.3.1)(react-is@18.3.1)(react@18.3.1)(styled-components@6.1.11)
-      '@sanity/util': 3.50.0
+      '@sanity/util': 3.51.0
       '@types/lodash-es': 4.17.12
       framer-motion: 11.0.8(react-dom@18.3.1)(react@18.3.1)
       lodash-es: 4.17.21
