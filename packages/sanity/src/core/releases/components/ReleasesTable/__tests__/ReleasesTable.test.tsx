@@ -4,7 +4,7 @@ import {useRouter} from 'sanity/router'
 
 import {createTestProvider} from '../../../../../../test/testUtils/TestProvider'
 import {useBundleOperations} from '../../../../store/bundles/useBundleOperations'
-import {ReleasesTable, type TableBundle} from '../../../components/ReleasesTable/ReleasesTable'
+import {ReleasesTable, type TableBundle} from '../ReleasesTable'
 
 jest.mock('sanity/router', () => ({
   ...(jest.requireActual('sanity/router') || {}),
