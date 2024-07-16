@@ -21,6 +21,7 @@ import {type DocumentHistory} from './documentTable/useReleaseHistory'
 import {getReleaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
 
 export type DocumentWithHistory = SanityDocument & {history: DocumentHistory | undefined}
+export type BundleDocumentRow = DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>
 
 const getRow =
   (
@@ -114,9 +115,9 @@ export function ReleaseSummary(props: {
   )
   const Row = useMemo(() => getRow(release), [release])
 
-  const renderRowActions: ({datum}: {datum: SanityDocument}) => JSX.Element = useCallback(
-    ({datum: document}) => <DocumentActions document={document} />,
-    [],
+  const renderRowActions: ({datum}: {datum: BundleDocumentRow}) => JSX.Element = useCallback(
+    ({datum: document}) => <DocumentActions document={document} bundleTitle={release.title} />,
+    [release.title],
   )
 
   return (
