@@ -1,12 +1,12 @@
 import {AvatarStack, Box, Flex, Text} from '@sanity/ui'
 import {RelativeTime, UserAvatar} from 'sanity'
 
-import {ReleaseDocumentPreview} from '../../components/ReleaseDocumentPreview'
-import {SortHeaderButton, TableHeaderSearch} from '../../components/Table/TableHeader'
-import {type Column} from '../../components/Table/types'
-import {type BundleDocumentRow} from './ReleaseSummary'
+import {ReleaseDocumentPreview} from '../../../components/ReleaseDocumentPreview'
+import {SortHeaderButton, TableHeaderSearch} from '../../../components/Table/TableHeader'
+import {type Column} from '../../../components/Table/types'
+import {type BundleDocumentRow} from '../ReleaseSummary'
 
-export const releaseSummaryColumnDefs: Column<BundleDocumentRow>[] = [
+export const documentTableColumnDefs: Column<BundleDocumentRow>[] = [
   {
     id: 'search',
     width: null,

@@ -14,9 +14,9 @@ import {useAddonDataset} from '../../../studio/addonDataset/useAddonDataset'
 import {Chip} from '../../components/Chip'
 import {Table, type TableProps} from '../../components/Table/Table'
 import {DocumentActions} from './documentTable/DocumentActions'
+import {documentTableColumnDefs} from './documentTable/DocumentTableColumnDefs'
 import {useDocumentPreviewValues} from './documentTable/useDocumentPreviewValues'
 import {type DocumentHistory} from './documentTable/useReleaseHistory'
-import {releaseSummaryColumnDefs} from './ReleaseSummaryColumnDefs'
 
 export type DocumentWithHistory = SanityDocument & {history: DocumentHistory | undefined}
 export type BundleDocumentRow = DocumentWithHistory & ReturnType<typeof useDocumentPreviewValues>
@@ -167,7 +167,7 @@ export function ReleaseSummary(props: {
         emptyState="No documents"
         rowId="_id"
         Row={Row}
-        columnDefs={releaseSummaryColumnDefs}
+        columnDefs={documentTableColumnDefs}
         rowActions={renderRowActions}
       />
     </Stack>
