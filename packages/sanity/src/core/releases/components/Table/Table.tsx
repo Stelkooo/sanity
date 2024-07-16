@@ -1,6 +1,6 @@
 import {Box, Card, Flex, Stack, Text} from '@sanity/ui'
 import {get} from 'lodash'
-import {Fragment, useCallback, useMemo} from 'react'
+import {Fragment, useMemo} from 'react'
 import {LoadingBlock} from 'sanity'
 import {type TableContextValue, useTableContext} from 'sanity/_singletons'
 import {useRouter} from 'sanity/router'
@@ -25,7 +25,7 @@ export interface TableProps<D, AdditionalD> {
   data: D[]
   emptyState: (() => JSX.Element) | string
   loading?: boolean
-  rowId?: keyof D
+  rowId: keyof D
   rowActions?: ({
     datum,
   }: {
@@ -104,12 +104,12 @@ const TableInner = <D, AdditionalD>({
     [columnDefs, rowActionColumnDef, rowActions],
   )
 
-  const renderRow = useCallback(
-    (rowIndex: number) =>
+  const renderRow = useMemo(
+    () =>
       function TableRow(datum: D | (D & AdditionalD)) {
         return (
           <Card
-            key={rowId ? String(datum[rowId]) : rowIndex}
+            key={String(datum[rowId])}
             data-testid="table-row"
             as="tr"
             border
@@ -160,11 +160,11 @@ const TableInner = <D, AdditionalD>({
       return emptyState()
     }
 
-    return filteredData.map((datum, rowIndex) => {
-      if (!Row) return renderRow(rowIndex)(datum)
+    return filteredData.map((datum) => {
+      if (!Row) return renderRow(datum)
       return (
-        <Row key={rowId ? String(datum[rowId]) : rowIndex} datum={datum} searchTerm={searchTerm}>
-          {renderRow(rowIndex)}
+        <Row key={String(datum[rowId])} datum={datum} searchTerm={searchTerm}>
+          {renderRow}
         </Row>
       )
     })
