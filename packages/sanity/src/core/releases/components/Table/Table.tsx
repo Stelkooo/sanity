@@ -12,7 +12,7 @@ import {type Column} from './types'
 
 export interface TableProps<D, AdditionalD> {
   columnDefs: AdditionalD extends undefined ? Column<D>[] : Column<D & AdditionalD>[]
-  searchFilterPredicate?: (data: D[], searchTerm: string) => D[]
+  searchFilter?: (data: D[], searchTerm: string) => D[]
   Row?: ({
     datum,
     children,
@@ -50,7 +50,7 @@ const TableInner = <D, AdditionalD>({
   columnDefs,
   data,
   emptyState,
-  searchFilterPredicate,
+  searchFilter,
   Row,
   rowId,
   rowActions,
@@ -60,8 +60,7 @@ const TableInner = <D, AdditionalD>({
   const {searchTerm, sort} = useTableContext()
 
   const filteredData = useMemo(() => {
-    const filteredResult =
-      searchTerm && searchFilterPredicate ? searchFilterPredicate(data, searchTerm) : data
+    const filteredResult = searchTerm && searchFilter ? searchFilter(data, searchTerm) : data
     if (!sort) return filteredResult
 
     return [...filteredResult].sort((a, b) => {
@@ -75,7 +74,7 @@ const TableInner = <D, AdditionalD>({
       if (sort.direction === 'asc') return order
       return -order
     })
-  }, [data, searchFilterPredicate, searchTerm, sort])
+  }, [data, searchFilter, searchTerm, sort])
 
   const rowActionColumnDef: Column = useMemo(
     () => ({

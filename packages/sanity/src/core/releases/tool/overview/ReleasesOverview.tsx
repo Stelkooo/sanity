@@ -173,11 +173,12 @@ export function ReleasesOverview() {
             {loadingOrHasBundles && createReleaseButton}
           </Flex>
           <Table<TableBundle>
+            // for reset of filter and sort on table when mode changed
             key={bundleGroupMode}
             loading={loading}
             data={groupedBundles[bundleGroupMode]}
             columnDefs={releasesOverviewColumnDefs}
-            searchFilterPredicate={applySearchTermToBundles}
+            searchFilter={applySearchTermToBundles}
             emptyState="No Releases"
             rowId="_id"
             rowActions={renderRowActions}

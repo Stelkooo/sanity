@@ -179,9 +179,11 @@ export function ReleaseSummary(props: {
             {/* Contributors */}
             <div>
               <Card as="button" padding={1} radius="full">
-                <AvatarStack size={0} style={{margin: -1}}>
-                  {collaborators?.map((userId) => <UserAvatar key={userId} user={userId} />)}
-                </AvatarStack>
+                {collaborators?.length && (
+                  <AvatarStack size={0} style={{margin: -1}}>
+                    {collaborators?.map((userId) => <UserAvatar key={userId} user={userId} />)}
+                  </AvatarStack>
+                )}
               </Card>
             </div>
           </Flex>
